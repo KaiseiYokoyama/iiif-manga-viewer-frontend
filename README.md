@@ -1,0 +1,1 @@
+iiif-manga-viewer-frontend
