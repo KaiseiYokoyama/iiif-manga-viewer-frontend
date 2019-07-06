@@ -1,0 +1,13 @@
+div[is=iiif-manga-viewer] {
+  flex: 1 1;
+  max-width: 100vw;
+  max-height: 100vh;
+}
+div[is=iiif-manga-viewer] canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/*# sourceMappingURL=viewer.css.map */

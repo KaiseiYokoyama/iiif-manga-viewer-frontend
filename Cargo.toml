@@ -1,0 +1,37 @@
+[package]
+name = "iiif-manga-viewer-frontend"
+version = "0.1.0"
+authors = [" <crome110mine@gmail.com>"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wasm-bindgen-futures = "0.3.24"
+futures = "0.1.20"
+js-sys = "0.3.24"
+wasm-bindgen = { version = "0.2.47", features = ["serde-serialize"]  }
+serde_json = "*"
+serde = { version = "1.0.80", features = ["derive"] }
+serde_derive = "*"
+
+[dependencies.web-sys]
+version = "0.3.4"
+features = [
+  'Headers',
+  'Request',
+  'RequestInit',
+  'RequestMode',
+  'Response',
+  'Document',
+  'Element',
+  'HtmlElement',
+  'HtmlImageElement',
+  'HtmlCanvasElement',
+  'CanvasRenderingContext2d',
+  'MouseEvent',
+  'Node',
+  'Window',
+  'console',
+]
