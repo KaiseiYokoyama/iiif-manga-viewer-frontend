@@ -1,8 +1,7 @@
-import init, {Viewer} from '../pkg/iiif_manga_viewer_frontend.js';
+import init, {Viewer} from '../../pkg/iiif_manga_viewer_frontend.js';
 
 class IIIFMangaViewer extends HTMLDivElement {
     constructor() {
-        console.log('const');
         super();
         this.initialize();
     }
@@ -38,6 +37,16 @@ class IIIFMangaViewer extends HTMLDivElement {
                 this.viewer.push_image(image);
             }
             this.viewer.show(0);
+
+            // load
+            let load = () => {
+                for (let i = 0; i < this.viewer.size(); i++) {
+                    if (!this.viewer.is_loaded(i)) {
+                        this.viewer.load(i);
+                    }
+                }
+            };
+            new Thread(load()).execute().terminate();
         }
     }
 }

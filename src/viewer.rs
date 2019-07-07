@@ -29,6 +29,7 @@ impl Viewer {
     }
 
     #[wasm_bindgen]
+    /// Manifestのurlからimageのurl一覧を出力する
     pub fn from_manifest(&mut self, url: String) -> Promise {
         use futures::{future, Future};
         use serde::{Deserialize, Serialize};
@@ -74,12 +75,6 @@ impl Viewer {
     }
 
     #[wasm_bindgen]
-    /// イメージを追加
-    pub fn push_image(&mut self, src: String) {
-        self.images.push(Image::new(src));
-    }
-
-    #[wasm_bindgen]
     /// イメージを表示する
     pub fn show(&mut self, index: usize) {
         let context = self.context();
@@ -99,11 +94,11 @@ impl Viewer {
         }
 
         // load
-        for i in index-5..index + 5 {
-            if let Some(image) = self.images.get_mut(index) {
-                if !image.loaded() { image.load(); }
-            }
-        }
+//        for i in index - 5..index + 5 {
+//            if let Some(image) = self.images.get_mut(index) {
+//                if !image.loaded() { image.load(); }
+//            }
+//        }
     }
 
     #[wasm_bindgen]
@@ -116,29 +111,6 @@ impl Viewer {
     /// 前のイメージを表示する
     pub fn prev(&mut self) {
         self.show(self.index - 1);
-    }
-
-    #[wasm_bindgen]
-    /// イメージを読み込む
-    pub fn load(&mut self, index: usize) {
-        if let Some(image) = self.images.get_mut(index) {
-            if image.loaded() {
-                log(&format!("viewer.images[{}] is loaded.", index));
-            } else {
-                image.load();
-            }
-        }
-    }
-
-    #[wasm_bindgen]
-    /// イメージが読み込み済みか否か
-    pub fn is_loaded(&self, index: usize) -> bool {
-        if let Some(image) = self.images.get(index) {
-            image.loaded()
-        } else {
-            log(&format!("viewer.images[{}] is loaded.", index));
-            true
-        }
     }
 
     /// onclickイベント
@@ -222,6 +194,45 @@ impl Viewer {
             .unwrap()
             .dyn_into::<web_sys::CanvasRenderingContext2d>()
             .unwrap()
+    }
+}
+
+#[wasm_bindgen]
+/// Viewer.imagesに関する実装
+impl Viewer {
+    #[wasm_bindgen]
+    /// イメージを追加
+    pub fn push_image(&mut self, src: String) {
+        self.images.push(Image::new(src));
+    }
+
+    #[wasm_bindgen]
+    /// imageの数
+    pub fn size(&self) -> usize {
+        self.images.len()
+    }
+
+    #[wasm_bindgen]
+    /// イメージを読み込む
+    pub fn load(&mut self, index: usize) {
+        if let Some(image) = self.images.get_mut(index) {
+            if image.loaded() {
+                log(&format!("viewer.images[{}] is loaded.", index));
+            } else {
+                image.load();
+            }
+        }
+    }
+
+    #[wasm_bindgen]
+    /// イメージが読み込み済みか否か
+    pub fn is_loaded(&self, index: usize) -> bool {
+        if let Some(image) = self.images.get(index) {
+            image.loaded()
+        } else {
+            log(&format!("viewer.images[{}] is loaded.", index));
+            true
+        }
     }
 }
 
