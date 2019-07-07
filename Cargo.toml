@@ -19,6 +19,8 @@ serde_derive = "*"
 [dependencies.web-sys]
 version = "0.3.4"
 features = [
+  'DomRect',
+  'DomRectReadOnly',
   'Headers',
   'Request',
   'RequestInit',
@@ -31,6 +33,7 @@ features = [
   'HtmlCanvasElement',
   'CanvasRenderingContext2d',
   'MouseEvent',
+  'UiEvent',
   'Node',
   'Window',
   'console',

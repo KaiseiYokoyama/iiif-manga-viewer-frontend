@@ -12,3 +12,6 @@
 
 #IntelliJ
 /.idea
+
+#Materialize css
+/materialize-src

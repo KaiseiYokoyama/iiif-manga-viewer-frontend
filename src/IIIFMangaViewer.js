@@ -25,7 +25,10 @@ class IIIFMangaViewer extends HTMLDivElement {
             };
             canvas.onmouseup = (event) => {
                 this.viewer.mouseup(event);
-            }
+            };
+            canvas.onclick = (event) => {
+                this.viewer.click(event);
+            };
         }
 
         const manifestURL = this.getAttribute('manifest');

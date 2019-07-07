@@ -88,28 +88,34 @@ impl Viewer {
             if !image.loaded() { image.load(); }
             if let Some(img) = &image.image {
                 self.index = index;
-                log(&format!("show: {}", index));
+                // prepare to show
                 let width = img.width();
                 let height = img.height();
-//                let width = self.canvas.client_width() as u32;
-//                let height = self.canvas.client_height() as u32;
-                log(&format!("width: {}, height {}", width, height));
-
-                // prepare to show
                 canvas.set_width(width);
                 canvas.set_height(height);
 
-//                let canvasAspect = width / height;
-//                let imageAspect = img.width() / img.height();
-//                let (zoom,dy,dy) = if imageAspect  {
-//
-//                }
-
                 context.draw_image_with_html_image_element(img, image.position_x, image.position_y);
             }
-//            self.canvas.set_attribute("width","auto");
-//            self.canvas.set_attribute("height","auto");
         }
+
+        // load
+        for i in index-5..index + 5 {
+            if let Some(image) = self.images.get_mut(index) {
+                if !image.loaded() { image.load(); }
+            }
+        }
+    }
+
+    #[wasm_bindgen]
+    /// 次のイメージを表示する
+    pub fn next(&mut self) {
+        self.show(self.index + 1);
+    }
+
+    #[wasm_bindgen]
+    /// 前のイメージを表示する
+    pub fn prev(&mut self) {
+        self.show(self.index - 1);
     }
 
     #[wasm_bindgen]
@@ -137,7 +143,38 @@ impl Viewer {
 
     /// onclickイベント
     #[wasm_bindgen]
-    pub fn onclick(&mut self, event: MouseEvent) {}
+    pub fn click(&mut self, event: MouseEvent) {
+        enum Direction {
+            Left,
+            Right,
+            None,
+        }
+        impl Direction {
+            fn from(offset_width: i32, x: i32) -> Self {
+                if x < offset_width / 4 {
+                    Direction::Left
+                } else if x > offset_width * 3 / 4 {
+                    Direction::Right
+                } else { Direction::None }
+            }
+        }
+
+        let offset_width = self.canvas().offset_width();
+        let x = event.page_x()
+            - self.canvas.get_bounding_client_rect().left() as i32
+            - web_sys::window().unwrap().page_x_offset().unwrap_or(0.0) as i32;
+        let direction = Direction::from(offset_width, x);
+
+        match direction {
+            Direction::Left => {
+                self.next();
+            }
+            Direction::Right => {
+                self.prev();
+            }
+            _ => {}
+        }
+    }
 
     /// mousedownイベント
     #[wasm_bindgen]
