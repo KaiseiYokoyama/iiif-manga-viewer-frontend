@@ -69,7 +69,7 @@ class IIIFMangaViewer extends HTMLDivElement {
         return div;
     }
 
-    show = (index) => {
+    show(index){
         if (!this.viewer.show(index)) {
             let progress = this.progress();
             let elem = this.viewer.get_image_elem(index);
@@ -82,11 +82,11 @@ class IIIFMangaViewer extends HTMLDivElement {
         }
     };
 
-    next = () => {
+    next(){
         this.show(this.viewer.index + 1);
     };
 
-    prev = () => {
+    prev(){
         this.show(this.viewer.index - 1);
     };
 

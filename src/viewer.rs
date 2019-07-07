@@ -17,7 +17,7 @@ struct Viewer {
     canvas: Element,
     images: Vec<Image>,
     pub index: usize,
-    mousedown: Option<MouseEvent>,
+    mousedown: Option<(f64, f64)>,
 }
 
 #[wasm_bindgen]
@@ -125,16 +125,18 @@ impl Viewer {
     /// mousedownイベント
     #[wasm_bindgen]
     pub fn mousedown(&mut self, event: MouseEvent) {
-        self.mousedown = Some(event);
+        log(&format!("event: X{} Y{}", event.offset_x(), event.offset_y()));
+        self.mousedown = Some((event.offset_x() as f64, event.offset_y() as f64));
     }
 
     /// mousemoveイベント
     #[wasm_bindgen]
     pub fn mousemove(&mut self, event: MouseEvent) {
-        if let Some(original) = &self.mousedown {
+        if let Some((origin_x, origin_y)) = self.mousedown.clone() {
+            log(&format!("original: X{} Y{}", origin_x, origin_y));
             if let Some(image) = self.images.get_mut(self.index) {
-                image.position_x = event.offset_x() as f64 - original.offset_x() as f64 + image.original_x;
-                image.position_y = event.offset_y() as f64 - original.offset_y() as f64 + image.original_y;
+                image.position_x = event.offset_x() as f64 - origin_x + image.original_x;
+                image.position_y = event.offset_y() as f64 - origin_y + image.original_y;
                 self.show(self.index);
             }
         }
