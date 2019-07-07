@@ -36,12 +36,12 @@ class IIIFMangaViewer extends HTMLDivElement {
             for (let image of images.srcs) {
                 this.viewer.push_image(image);
             }
-            this.viewer.show(0);
+            this.show(0);
 
             // load
             let load = () => {
                 for (let i = 0; i < this.viewer.size(); i++) {
-                    if (!this.viewer.is_loaded(i)) {
+                    if (!this.viewer.is_loading(i)) {
                         this.viewer.load(i);
                     }
                 }
@@ -49,6 +49,41 @@ class IIIFMangaViewer extends HTMLDivElement {
             new Thread(load()).execute().terminate();
         }
     }
+
+    show(index) {
+        if (!this.viewer.show(index)) {
+            let elem = this.viewer.get_image_elem(index);
+            if (elem) {
+                elem.onload = () => {
+                    this.show(index);
+                }
+            }
+        }
+    }
+
+    next() {
+        if (!this.viewer.next()) {
+            let elem = this.viewer.get_next_image_elem(index);
+            if (elem) {
+                elem.onload = () => {
+                    this.show(index);
+                }
+            }
+        }
+    }
+
+    prev() {
+        if (!this.viewer.prev()) {
+            let elem = this.viewer.get_prev_image_elem(index);
+            if (elem) {
+                elem.onload = () => {
+                    this.show(index);
+                }
+            }
+        }
+    }
+
+
 }
 
 customElements.define("iiif-manga-viewer", IIIFMangaViewer, {extends: "div"});

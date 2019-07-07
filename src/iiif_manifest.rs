@@ -8,10 +8,10 @@ pub struct Manifest {
     id: String,
     #[serde(rename = "@type")]
     type_: String,
+    label: String,
     license: Option<String>,
     attribution: Option<String>,
     description: Option<String>,
-    label: String,
     sequences: Vec<Sequence>,
 }
 
@@ -42,7 +42,7 @@ impl FromStr for Manifest {
 #[derive(Deserialize, Debug, Serialize)]
 struct Sequence {
     #[serde(rename = "@id")]
-    id: String,
+    id: Option<String>,
     #[serde(rename = "@type")]
     type_: String,
     canvases: Vec<Canvas>,
@@ -63,7 +63,7 @@ struct Canvas {
 #[derive(Deserialize, Debug, Serialize)]
 struct Image {
     #[serde(rename = "@id")]
-    id: String,
+    id: Option<String>,
     #[serde(rename = "@type")]
     type_: String,
     resource: Resource,

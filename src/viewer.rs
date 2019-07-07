@@ -25,6 +25,7 @@ impl Viewer {
     #[wasm_bindgen(constructor)]
     /// Viewerのコンストラクタ
     pub fn new(canvas: Element) -> Self {
+        std::panic::set_hook(Box::new(console_error_panic_hook::hook));
         Self { canvas, images: Vec::new(), index: 0, mousedown: None }
     }
 
@@ -32,7 +33,6 @@ impl Viewer {
     /// Manifestのurlからimageのurl一覧を出力する
     pub fn from_manifest(&mut self, url: String) -> Promise {
         use futures::{future, Future};
-        use serde::{Deserialize, Serialize};
         use wasm_bindgen::prelude::*;
         use wasm_bindgen::JsCast;
         use wasm_bindgen_futures::future_to_promise;
@@ -76,12 +76,16 @@ impl Viewer {
 
     #[wasm_bindgen]
     /// イメージを表示する
-    pub fn show(&mut self, index: usize) {
+    pub fn show(&mut self, index: usize) -> bool {
         let context = self.context();
         let canvas = self.canvas();
         if let Some(image) = self.images.get_mut(index) {
-            if !image.loaded() { image.load(); }
+            if !image.loading() {
+                image.load();
+                return false;
+            }
             if let Some(img) = &image.image {
+                log(&format!("show: {}", index));
                 self.index = index;
                 // prepare to show
                 let width = img.width();
@@ -90,27 +94,22 @@ impl Viewer {
                 canvas.set_height(height);
 
                 context.draw_image_with_html_image_element(img, image.position_x, image.position_y);
+                return true;
             }
         }
-
-        // load
-//        for i in index - 5..index + 5 {
-//            if let Some(image) = self.images.get_mut(index) {
-//                if !image.loaded() { image.load(); }
-//            }
-//        }
+        return true;
     }
 
     #[wasm_bindgen]
     /// 次のイメージを表示する
-    pub fn next(&mut self) {
-        self.show(self.index + 1);
+    pub fn next(&mut self) -> bool {
+        self.show(self.index + 1)
     }
 
     #[wasm_bindgen]
     /// 前のイメージを表示する
-    pub fn prev(&mut self) {
-        self.show(self.index - 1);
+    pub fn prev(&mut self) -> bool {
+        self.show(self.index - 1)
     }
 
     /// onclickイベント
@@ -207,13 +206,34 @@ impl Viewer {
     }
 
     #[wasm_bindgen]
+    /// HtmlImageElementを取得
+    pub fn get_image_elem(&self, index: usize) -> Option<HtmlImageElement> {
+        if let Some(image) = self.images.get(index) {
+            image.image.clone()
+        } else { None }
+    }
+    #[wasm_bindgen]
+    /// HtmlImageElementを取得
+    pub fn get_next_image_elem(&self) -> Option<HtmlImageElement> {
+        if let Some(image) = self.images.get(self.index + 1) {
+            image.image.clone()
+        } else { None }
+    }
+    #[wasm_bindgen]
+    /// HtmlImageElementを取得
+    pub fn get_prev_image_elem(&self) -> Option<HtmlImageElement> {
+        if let Some(image) = self.images.get(self.index - 1) {
+            image.image.clone()
+        } else { None }
+    }
+
+    #[wasm_bindgen]
     /// imageの数
     pub fn size(&self) -> usize {
         self.images.len()
     }
 
     #[wasm_bindgen]
-    /// イメージを読み込む
     pub fn load(&mut self, index: usize) {
         if let Some(image) = self.images.get_mut(index) {
             if image.loaded() {
@@ -225,12 +245,21 @@ impl Viewer {
     }
 
     #[wasm_bindgen]
-    /// イメージが読み込み済みか否か
+    pub fn is_loading(&self, index: usize) -> bool {
+        if let Some(image) = self.images.get(index) {
+            image.loading()
+        } else {
+            log(&format!("viewer.images[{}] is Option::None", index));
+            true
+        }
+    }
+
+    #[wasm_bindgen]
     pub fn is_loaded(&self, index: usize) -> bool {
         if let Some(image) = self.images.get(index) {
             image.loaded()
         } else {
-            log(&format!("viewer.images[{}] is loaded.", index));
+            log(&format!("viewer.images[{}] is Option::None", index));
             true
         }
     }
@@ -259,10 +288,15 @@ impl Image {
         }
     }
 
+    /// 読み込みを試みたか否か
+    pub fn loading(&self) -> bool {
+        self.image.is_some()
+    }
+
     /// 読み込み済みか否か
     pub fn loaded(&self) -> bool {
-        if let Some(_) = &self.image {
-            true
+        if let Some(image) = &self.image {
+            image.complete()
         } else { false }
     }
 
