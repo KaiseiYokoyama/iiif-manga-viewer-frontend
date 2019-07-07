@@ -1,4 +1,4 @@
-import init, {Viewer} from '../../pkg/iiif_manga_viewer_frontend.js';
+import init, {Viewer, Direction} from '../../pkg/iiif_manga_viewer_frontend.js';
 
 class IIIFMangaViewer extends HTMLDivElement {
     constructor() {
@@ -26,7 +26,15 @@ class IIIFMangaViewer extends HTMLDivElement {
                 this.viewer.mouseup(event);
             };
             canvas.onclick = (event) => {
-                this.viewer.click(event);
+                let direction = this.viewer.click(event);
+                switch (direction) {
+                    case Direction.Left:
+                        this.next();
+                        break;
+                    case Direction.Right:
+                        this.prev();
+                        break;
+                }
             };
         }
 
@@ -50,38 +58,37 @@ class IIIFMangaViewer extends HTMLDivElement {
         }
     }
 
-    show(index) {
+    progress() {
+        let div = document.createElement('div');
+        div.innerHTML =
+            "<div class=\"progress\" style='position: fixed;top: 50%;left: 50%; width: 50%;transform: translate(-50%, -50%);'>\n" +
+            "    <div class='indeterminate'></div>" +
+            "</div>";
+        div = div.firstElementChild;
+        this.appendChild(div);
+        return div;
+    }
+
+    show = (index) => {
         if (!this.viewer.show(index)) {
+            let progress = this.progress();
             let elem = this.viewer.get_image_elem(index);
             if (elem) {
                 elem.onload = () => {
+                    this.removeChild(progress);
                     this.show(index);
                 }
             }
         }
-    }
+    };
 
-    next() {
-        if (!this.viewer.next()) {
-            let elem = this.viewer.get_next_image_elem(index);
-            if (elem) {
-                elem.onload = () => {
-                    this.show(index);
-                }
-            }
-        }
-    }
+    next = () => {
+        this.show(this.viewer.index + 1);
+    };
 
-    prev() {
-        if (!this.viewer.prev()) {
-            let elem = this.viewer.get_prev_image_elem(index);
-            if (elem) {
-                elem.onload = () => {
-                    this.show(index);
-                }
-            }
-        }
-    }
+    prev = () => {
+        this.show(this.viewer.index - 1);
+    };
 
 
 }

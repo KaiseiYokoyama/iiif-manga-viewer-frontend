@@ -16,7 +16,7 @@ extern "C" {
 struct Viewer {
     canvas: Element,
     images: Vec<Image>,
-    index: usize,
+    pub index: usize,
     mousedown: Option<MouseEvent>,
 }
 
@@ -114,37 +114,12 @@ impl Viewer {
 
     /// onclickイベント
     #[wasm_bindgen]
-    pub fn click(&mut self, event: MouseEvent) {
-        enum Direction {
-            Left,
-            Right,
-            None,
-        }
-        impl Direction {
-            fn from(offset_width: i32, x: i32) -> Self {
-                if x < offset_width / 4 {
-                    Direction::Left
-                } else if x > offset_width * 3 / 4 {
-                    Direction::Right
-                } else { Direction::None }
-            }
-        }
-
+    pub fn click(&mut self, event: MouseEvent) -> Direction {
         let offset_width = self.canvas().offset_width();
         let x = event.page_x()
             - self.canvas.get_bounding_client_rect().left() as i32
             - web_sys::window().unwrap().page_x_offset().unwrap_or(0.0) as i32;
-        let direction = Direction::from(offset_width, x);
-
-        match direction {
-            Direction::Left => {
-                self.next();
-            }
-            Direction::Right => {
-                self.prev();
-            }
-            _ => {}
-        }
+        Direction::from(offset_width, x)
     }
 
     /// mousedownイベント
@@ -209,20 +184,6 @@ impl Viewer {
     /// HtmlImageElementを取得
     pub fn get_image_elem(&self, index: usize) -> Option<HtmlImageElement> {
         if let Some(image) = self.images.get(index) {
-            image.image.clone()
-        } else { None }
-    }
-    #[wasm_bindgen]
-    /// HtmlImageElementを取得
-    pub fn get_next_image_elem(&self) -> Option<HtmlImageElement> {
-        if let Some(image) = self.images.get(self.index + 1) {
-            image.image.clone()
-        } else { None }
-    }
-    #[wasm_bindgen]
-    /// HtmlImageElementを取得
-    pub fn get_prev_image_elem(&self) -> Option<HtmlImageElement> {
-        if let Some(image) = self.images.get(self.index - 1) {
             image.image.clone()
         } else { None }
     }
@@ -311,4 +272,21 @@ impl Image {
 #[derive(Deserialize, Debug, Serialize, Default)]
 struct ImageSrcs {
     pub srcs: Vec<String>,
+}
+
+#[wasm_bindgen]
+pub enum Direction {
+    Left,
+    Right,
+    None,
+}
+
+impl Direction {
+    fn from(offset_width: i32, x: i32) -> Self {
+        if x < offset_width / 4 {
+            Direction::Left
+        } else if x > offset_width * 3 / 4 {
+            Direction::Right
+        } else { Direction::None }
+    }
 }
