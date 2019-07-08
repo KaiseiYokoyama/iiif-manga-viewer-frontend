@@ -14,19 +14,19 @@ extern "C" {
 
 #[wasm_bindgen]
 struct Viewer {
-    canvas: Element,
+    canvas: Canvas,
+    //    page_list: Element,
     images: Vec<Image>,
     pub index: usize,
-    mousedown: Option<(f64, f64)>,
 }
 
 #[wasm_bindgen]
 impl Viewer {
     #[wasm_bindgen(constructor)]
     /// Viewerのコンストラクタ
-    pub fn new(canvas: Element) -> Self {
+    pub fn new(canvas: Element, page_list: Element) -> Self {
         std::panic::set_hook(Box::new(console_error_panic_hook::hook));
-        Self { canvas, images: Vec::new(), index: 0, mousedown: None }
+        Self { canvas: Canvas::new(canvas), images: Vec::new(), index: 0 }
     }
 
     #[wasm_bindgen]
@@ -117,7 +117,7 @@ impl Viewer {
     pub fn click(&mut self, event: MouseEvent) -> Direction {
         let offset_width = self.canvas().offset_width();
         let x = event.page_x()
-            - self.canvas.get_bounding_client_rect().left() as i32
+            - self.canvas_elem().get_bounding_client_rect().left() as i32
             - web_sys::window().unwrap().page_x_offset().unwrap_or(0.0) as i32;
         Direction::from(offset_width, x)
     }
@@ -126,13 +126,13 @@ impl Viewer {
     #[wasm_bindgen]
     pub fn mousedown(&mut self, event: MouseEvent) {
         log(&format!("event: X{} Y{}", event.offset_x(), event.offset_y()));
-        self.mousedown = Some((event.offset_x() as f64, event.offset_y() as f64));
+        self.canvas.mousedown = Some((event.offset_x() as f64, event.offset_y() as f64));
     }
 
     /// mousemoveイベント
     #[wasm_bindgen]
     pub fn mousemove(&mut self, event: MouseEvent) {
-        if let Some((origin_x, origin_y)) = self.mousedown.clone() {
+        if let Some((origin_x, origin_y)) = self.canvas.mousedown.clone() {
             log(&format!("original: X{} Y{}", origin_x, origin_y));
             if let Some(image) = self.images.get_mut(self.index) {
                 image.position_x = event.offset_x() as f64 - origin_x + image.original_x;
@@ -145,18 +145,23 @@ impl Viewer {
     /// mouseupイベント
     #[wasm_bindgen]
     pub fn mouseup(&mut self, event: MouseEvent) {
-        if let Some(original) = &self.mousedown {
+        if let Some(original) = &self.canvas.mousedown {
             if let Some(image) = self.images.get_mut(self.index) {
                 image.original_x = image.position_x;
                 image.original_y = image.position_y;
             }
         }
-        self.mousedown = None;
+        self.canvas.mousedown = None;
+    }
+
+    /// canvasのelementを取得する
+    fn canvas_elem(&self) -> &Element {
+        &self.canvas.element
     }
 
     /// canvasを取得する
     fn canvas(&self) -> HtmlCanvasElement {
-        self.canvas.clone()
+        self.canvas_elem().clone()
             .dyn_into::<web_sys::HtmlCanvasElement>()
             .map_err(|_| ())
             .unwrap()
@@ -227,6 +232,20 @@ impl Viewer {
         }
     }
 }
+
+
+/// 画像を表示する部分
+struct Canvas {
+    element: Element,
+    mousedown: Option<(f64, f64)>,
+}
+
+impl Canvas {
+    pub fn new(element: Element) -> Self {
+        Self { element, mousedown: None }
+    }
+}
+
 
 struct Image {
     pub image: Option<HtmlImageElement>,
