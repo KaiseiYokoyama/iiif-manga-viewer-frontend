@@ -15,8 +15,9 @@ extern "C" {
 #[wasm_bindgen]
 struct Viewer {
     canvas: Canvas,
-    //    page_list: Element,
+    //    image_list: ImageList,
     images: Vec<Image>,
+    manifest: Option<Manifest>,
     pub index: usize,
 }
 
@@ -26,52 +27,29 @@ impl Viewer {
     /// Viewerのコンストラクタ
     pub fn new(canvas: Element, page_list: Element) -> Self {
         std::panic::set_hook(Box::new(console_error_panic_hook::hook));
-        Self { canvas: Canvas::new(canvas), images: Vec::new(), index: 0 }
+        Self { canvas: Canvas::new(canvas), images: Vec::new(), manifest: None, index: 0 }
     }
 
     #[wasm_bindgen]
-    /// Manifestのurlからimageのurl一覧を出力する
-    pub fn from_manifest(&mut self, url: String) -> Promise {
-        use futures::{future, Future};
-        use wasm_bindgen::prelude::*;
-        use wasm_bindgen::JsCast;
-        use wasm_bindgen_futures::future_to_promise;
-        use wasm_bindgen_futures::JsFuture;
-        use web_sys::{Request, RequestInit, RequestMode, Response};
+    /// Manifestをセットする
+    pub fn set_manifest(&mut self, manifest: String) -> bool {
+        let manifest: serde_json::Result<Manifest> = serde_json::from_str(&manifest);
+        let manifest = match manifest {
+            Ok(m) => m,
+            Err(_) => {
+                log("Cannot read manifest");
+                return false;
+            }
+        };
 
-        let mut opts = RequestInit::new();
-        opts.method("GET");
-        opts.mode(RequestMode::Cors);
-
-        let request = Request::new_with_str_and_init(&url, &opts).unwrap();
-
-        let window = web_sys::window().unwrap();
-        let request_promise = window.fetch_with_request(&request);
-
-        let future = JsFuture::from(request_promise)
-            .and_then(|resp_value| {
-                // `resp_value` is a `Response` object.
-                assert!(resp_value.is_instance_of::<Response>());
-                let resp: Response = resp_value.dyn_into().unwrap();
-                resp.json()
-            })
-            .and_then(|json_value: Promise| {
-                // Convert this other `Promise` into a rust `Future`.
-                JsFuture::from(json_value)
-            })
-            .and_then(|json| {
-                let mut images = ImageSrcs::default();
-                // Use serde to parse the JSON into a struct.
-                let manifest: Manifest = json.into_serde().unwrap();
-                for image in &manifest.get_images() {
-                    images.srcs.push(image.clone());
-                }
-
-                future::ok(JsValue::from_serde(&images).unwrap())
-            });
-
-        // Convert this Rust `Future` back into a JS `Promise`.
-        future_to_promise(future)
+        // push images
+        let images = manifest.get_images();
+        for image in images {
+            log(image.src());
+            self.push_image(image.src());
+        }
+        self.manifest = Some(manifest);
+        true
     }
 
     #[wasm_bindgen]
@@ -96,6 +74,7 @@ impl Viewer {
                 context.draw_image_with_html_image_element(img, image.position_x, image.position_y);
                 return true;
             }
+            return false;
         }
         return true;
     }
@@ -181,9 +160,8 @@ impl Viewer {
 #[wasm_bindgen]
 /// Viewer.imagesに関する実装
 impl Viewer {
-    #[wasm_bindgen]
     /// イメージを追加
-    pub fn push_image(&mut self, src: String) {
+    fn push_image(&mut self, src: &str) {
         self.images.push(Image::new(src));
     }
 
@@ -233,7 +211,6 @@ impl Viewer {
     }
 }
 
-
 /// 画像を表示する部分
 struct Canvas {
     element: Element,
@@ -246,6 +223,9 @@ impl Canvas {
     }
 }
 
+struct ImageList {
+    element: Element,
+}
 
 struct Image {
     pub image: Option<HtmlImageElement>,
@@ -258,7 +238,8 @@ struct Image {
 }
 
 impl Image {
-    pub fn new(src: String) -> Self {
+    pub fn new(src: &str) -> Self {
+        let src = src.to_string();
         Self {
             image: None,
             src,

@@ -14,7 +14,10 @@ class IIIFMangaViewer extends HTMLDivElement {
         // canvasを設定
         const canvas = document.createElement('canvas');
         this.appendChild(canvas);
-        this.viewer = new Viewer(canvas);
+        // ImageListを設定
+        const imageList = document.createElement('div');
+        this.appendChild(imageList);
+        this.viewer = new Viewer(canvas, imageList);
         {
             canvas.onmousedown = (event) => {
                 this.viewer.mousedown(event);
@@ -40,21 +43,26 @@ class IIIFMangaViewer extends HTMLDivElement {
 
         const manifestURL = this.getAttribute('manifest');
         if (manifestURL) {
-            let images = await this.viewer.from_manifest(manifestURL);
-            for (let image of images.srcs) {
-                this.viewer.push_image(image);
-            }
-            this.show(0);
-
-            // load
-            let load = () => {
-                for (let i = 0; i < this.viewer.size(); i++) {
-                    if (!this.viewer.is_loading(i)) {
-                        this.viewer.load(i);
+            {
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', manifestURL);
+                xhr.onload = () => {
+                    let manifest = xhr.responseText;
+                    if (!this.viewer.set_manifest(manifest)){
+                        // manifestの読み取りに失敗すると消える
+                        this.remove();
                     }
-                }
-            };
-            new Thread(load()).execute().terminate();
+                    this.show(0);
+                    new Thread(() => {
+                        for (let i = 0; i < this.viewer.size(); i++) {
+                            if (!this.viewer.is_loading(i)) {
+                                this.viewer.load(i);
+                            }
+                        }
+                    }).execute().terminate();
+                };
+                xhr.send();
+            }
         }
     }
 
