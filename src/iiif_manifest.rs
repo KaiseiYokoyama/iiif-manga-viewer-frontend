@@ -16,13 +16,13 @@ pub struct Manifest {
 }
 
 impl Manifest {
-    pub fn get_images(&self) -> Vec<String> {
+    pub fn get_images(&self) -> Vec<&Image> {
         let mut images = Vec::new();
 
         for sequence in &self.sequences {
             for canvas in &sequence.canvases {
                 for image in &canvas.images {
-                    images.push(image.resource.id.clone());
+                    images.push(image);
                 }
             }
         }
@@ -61,12 +61,18 @@ struct Canvas {
 }
 
 #[derive(Deserialize, Debug, Serialize)]
-struct Image {
+pub struct Image {
     #[serde(rename = "@id")]
     id: Option<String>,
     #[serde(rename = "@type")]
     type_: String,
     resource: Resource,
+}
+
+impl Image {
+    pub fn src(&self) -> &String {
+        &self.resource.id
+    }
 }
 
 #[derive(Deserialize, Debug, Serialize)]
