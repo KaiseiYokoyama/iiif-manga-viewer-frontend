@@ -16,7 +16,7 @@ extern "C" {
 struct Viewer {
     canvas: Canvas,
     //    image_list: ImageList,
-    images: Vec<Image>,
+    images: Vec<ViewerImage>,
     manifest: Option<Manifest>,
     pub index: usize,
 }
@@ -162,7 +162,7 @@ impl Viewer {
 impl Viewer {
     /// イメージを追加
     fn push_image(&mut self, src: &str) {
-        self.images.push(Image::new(src));
+        self.images.push(ViewerImage::new(src));
     }
 
     #[wasm_bindgen]
@@ -227,7 +227,7 @@ struct ImageList {
     element: Element,
 }
 
-struct Image {
+struct ViewerImage {
     pub image: Option<HtmlImageElement>,
     pub src: String,
     pub position_x: f64,
@@ -237,7 +237,7 @@ struct Image {
     pub zoom: f64,
 }
 
-impl Image {
+impl ViewerImage {
     pub fn new(src: &str) -> Self {
         let src = src.to_string();
         Self {
