@@ -9,5 +9,11 @@ div[is=iiif-manga-viewer] canvas {
   height: 100%;
   object-fit: contain;
 }
+div[is=iiif-manga-viewer] ul.image-list {
+  cursor: pointer;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
 
 /*# sourceMappingURL=viewer.css.map */

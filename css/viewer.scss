@@ -12,5 +12,10 @@ div[is="iiif-manga-viewer"] {
     object-fit: contain;
   }
 
-
+  ul.image-list {
+    cursor: pointer;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
 }

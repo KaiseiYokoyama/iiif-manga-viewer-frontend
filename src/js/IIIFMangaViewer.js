@@ -8,7 +8,7 @@ class ImageListItem extends HTMLLIElement {
         super();
 
         // 必要なclassを追加
-        this.classList.add('collection-item');
+        this.classList.add('collection-item','image-list-item');
 
         // onclickを設定: 表示
         this.onclick = () => {
@@ -51,7 +51,7 @@ class ImageList extends HTMLUListElement {
         super();
 
         // 必要なclassを追加
-        this.classList.add('collection', 'with-header');
+        this.classList.add('collection', 'with-header','image-list');
     }
 
     /**

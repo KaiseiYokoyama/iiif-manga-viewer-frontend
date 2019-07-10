@@ -99,7 +99,7 @@ impl ManifestSubstructure for Canvas {
             // liの詳細設定: srcを設定
             li.set_attribute("src", &src);
             // liの詳細設定: CustomElementを設定
-            li.set_attribute("is", "image-list-item");
+//            li.set_attribute("is", "image-list-item");
             // liの詳細設定: inner_htmlを設定
             li.set_inner_html(label);
             // push!
