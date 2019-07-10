@@ -1,5 +1,8 @@
 import init, {Viewer, Direction} from '../../pkg/iiif_manga_viewer_frontend.js';
 
+/**
+ * ビューア本体
+ */
 class IIIFMangaViewer extends HTMLDivElement {
     constructor() {
         super();
@@ -15,7 +18,9 @@ class IIIFMangaViewer extends HTMLDivElement {
         const canvas = document.createElement('canvas');
         this.appendChild(canvas);
         // ImageListを設定
-        const imageList = document.createElement('div');
+        const imageList = document.createElement('ul', {is: "image-list"});
+        // const imageList = document.createElement('ul');
+        console.log(imageList);
         this.appendChild(imageList);
         this.viewer = new Viewer(canvas, imageList);
         {
@@ -48,7 +53,7 @@ class IIIFMangaViewer extends HTMLDivElement {
                 xhr.open('GET', manifestURL);
                 xhr.onload = () => {
                     let manifest = xhr.responseText;
-                    if (!this.viewer.set_manifest(manifest)){
+                    if (!this.viewer.set_manifest(manifest)) {
                         // manifestの読み取りに失敗すると消える
                         this.remove();
                     }
@@ -102,3 +107,57 @@ class IIIFMangaViewer extends HTMLDivElement {
 }
 
 customElements.define("iiif-manga-viewer", IIIFMangaViewer, {extends: "div"});
+
+/**
+ * ビューアのImageList
+ */
+class ImageList extends HTMLUListElement {
+    constructor() {
+        super();
+
+        // 必要なclassを追加
+        this.classList.add('collection', 'with-header');
+    }
+
+    /**
+     * 子要素を追加する。ImageListItem以外は無視。
+     * @param newChild {ImageListItem} リストの子要素
+     */
+    appendChild(newChild) {
+        if (newChild.getAttribute('is') === 'image-list-item') {
+            super.appendChild(newChild);
+            newChild.setMangaviewer();
+        }
+    }
+}
+
+customElements.define("image-list", ImageList, {extends: "ul"});
+
+
+/**
+ * ビューアのImageListのli要素
+ */
+class ImageListItem extends HTMLLIElement {
+    constructor() {
+        super();
+        this.onclick = () => {
+            const src = this.getAttribute('src');
+            console.log("onclick: "+src);
+            // 表示
+            this.mangaViewer.show(this.mangaViewer.viewer.get_index_by_src(src));
+        }
+    }
+
+    setMangaviewer() {
+        // 自分の所属するマンガビューアを登録しておく
+        let mangaViewer = this;
+        while (mangaViewer.getAttribute('is') !== 'iiif-manga-viewer') {
+            mangaViewer = mangaViewer.parentElement;
+            if (!mangaViewer) return;
+        }
+        this.mangaViewer = mangaViewer;
+
+    }
+}
+
+customElements.define("image-list-item", ImageListItem, {extends: "li"});

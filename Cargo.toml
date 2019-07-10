@@ -22,6 +22,7 @@ version = "0.3.4"
 features = [
   'DomRect',
   'DomRectReadOnly',
+  'DomTokenList',
   'Headers',
   'Request',
   'RequestInit',
@@ -32,6 +33,8 @@ features = [
   'HtmlElement',
   'HtmlImageElement',
   'HtmlCanvasElement',
+  'HtmlLiElement',
+  'ElementCreationOptions',
   'CanvasRenderingContext2d',
   'MouseEvent',
   'UiEvent',
