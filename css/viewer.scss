@@ -30,6 +30,10 @@ div[is="iiif-manga-viewer"] {
     top: 0;
     left: 0;
 
+    &.hide {
+      display: none;
+    }
+
     li.image-list-item {
       i.status-icon:after {
         font-family: 'Material Icons';

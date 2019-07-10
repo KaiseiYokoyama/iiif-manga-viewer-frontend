@@ -22,6 +22,9 @@ div[is=iiif-manga-viewer] ul.image-list {
   top: 0;
   left: 0;
 }
+div[is=iiif-manga-viewer] ul.image-list.hide {
+  display: none;
+}
 div[is=iiif-manga-viewer] ul.image-list li.image-list-item i.status-icon:after {
   font-family: "Material Icons";
   content: "image";

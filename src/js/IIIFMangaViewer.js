@@ -74,6 +74,10 @@ class ImageList extends HTMLUListElement {
         this.classList.add('collection', 'with-header', 'image-list');
     }
 
+    onOff() {
+        this.classList.toggle('hide');
+    }
+
     /**
      * 要素が DOM に挿入されるたびに呼び出されます。
      * リソースの取得やレンダリングなどの、セットアップ コードの実行に役立ちます。
@@ -120,13 +124,6 @@ class ImageList extends HTMLUListElement {
 
             // loading状態に設定
             newChild.loading();
-
-            // const index = this.querySelectorAll('.image-list-item').length;
-            // const image = this.mangaViewer.viewer.get_image_elem(index);
-            // image.addEventListener('load', () => {
-            //     // loaded状態に設定
-            //     newChild.loaded();
-            // });
         }
     }
 
@@ -143,6 +140,15 @@ customElements.define("image-list", ImageList, {extends: "ul"});
 class IIIFMangaViewer extends HTMLDivElement {
     constructor() {
         super();
+    }
+
+    /**
+     * 要素が DOM に挿入されるたびに呼び出されます。
+     * リソースの取得やレンダリングなどの、セットアップ コードの実行に役立ちます。
+     * 一般に、この時点まで作業を遅らせるようにする必要があります。
+     * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
+     */
+    connectedCallback() {
         this.initialize();
     }
 
@@ -223,6 +229,44 @@ class IIIFMangaViewer extends HTMLDivElement {
                     }
                     this.show(0);
 
+                    // FAB(Floating Action Button)追加
+                    const fabs = document.createElement('div');
+                    fabs.classList.add('fixed-action-btn');
+                    {
+                        const mainFAB = document.createElement('a');
+                        mainFAB.classList.add("btn-floating", "btn-large");
+                        {
+                            const i = document.createElement('i');
+                            i.classList.add("large", "material-icons");
+                            i.innerHTML = 'menu';
+                            mainFAB.appendChild(i);
+                        }
+                        fabs.appendChild(mainFAB);
+
+                        const subFABS = document.createElement('ul');
+                        {
+                            {
+                                const li = document.createElement('li');
+                                {
+                                    const subFAB = document.createElement('a');
+                                    subFAB.classList.add("btn-floating");
+                                    {
+                                        const i = document.createElement('i');
+                                        i.classList.add("material-icons");
+                                        i.innerHTML = 'list';
+                                        subFAB.appendChild(i);
+                                    }
+                                    subFAB.onclick = () => this.imageList.onOff();
+                                    li.appendChild(subFAB);
+                                }
+                                subFABS.appendChild(li);
+                            }
+                        }
+                        fabs.appendChild(subFABS);
+                    }
+                    this.appendChild(fabs);
+                    M.FloatingActionButton.init(fabs, {hoverEnabled: false});
+
                     // 裏でloadを実行
                     let load = () => {
                         for (let i = 0; i < this.viewer.size(); i++) {
@@ -264,10 +308,6 @@ class IIIFMangaViewer extends HTMLDivElement {
                     this.removeChild(progress);
                     this.show(index);
                 });
-                // elem.onload = () => {
-                //     this.removeChild(progress);
-                //     this.show(index);
-                // }
             }
         } else {
             this.imageList.activate(index);
