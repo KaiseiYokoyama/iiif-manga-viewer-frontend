@@ -25,7 +25,7 @@ class ImageListItem extends HTMLLIElement {
     initialize() {
         // 自分の所属するマンガビューアを登録しておく
         let mangaViewer = this;
-        while (mangaViewer.getAttribute('is') !== 'iiif-manga-viewer') {
+        while (!(mangaViewer instanceof IIIFMangaViewer)) {
             mangaViewer = mangaViewer.parentElement;
             if (!mangaViewer) return;
         }
@@ -33,13 +33,11 @@ class ImageListItem extends HTMLLIElement {
 
         // 親要素を登録しておく
         let imageList = this;
-        while (imageList.getAttribute('is') !== 'image-list') {
+        while (!(imageList instanceof ImageList)) {
             imageList = imageList.parentElement;
             if (!imageList) return;
         }
         this.imageList = imageList;
-        console.log('imageList: ' + imageList);
-
     }
 }
 
@@ -71,7 +69,7 @@ class ImageList extends HTMLUListElement {
      * @param newChild {ImageListItem} リストの子要素
      */
     appendChild(newChild) {
-        if (newChild.getAttribute('is') === 'image-list-item') {
+        if (newChild instanceof ImageListItem) {
             super.appendChild(newChild);
             newChild.initialize();
         }
@@ -100,6 +98,7 @@ class IIIFMangaViewer extends HTMLDivElement {
         // ImageListを設定
         const imageList = document.createElement('ul', {is: "image-list"});
         console.log('imageList.is=' + imageList.getAttribute('is'));
+        console.log('imageList instanceof ImageList: ' + (imageList instanceof ImageList));
         this.appendChild(imageList);
         this.viewer = new Viewer(canvas, imageList);
         {
