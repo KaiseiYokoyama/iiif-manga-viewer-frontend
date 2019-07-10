@@ -22,7 +22,13 @@ class ImageListItem extends HTMLLIElement {
         }
     }
 
-    initialize() {
+    /**
+     * 要素が DOM に挿入されるたびに呼び出されます。
+     * リソースの取得やレンダリングなどの、セットアップ コードの実行に役立ちます。
+     * 一般に、この時点まで作業を遅らせるようにする必要があります。
+     * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
+     */
+    connectedCallback() {
         // 自分の所属するマンガビューアを登録しておく
         let mangaViewer = this;
         while (!(mangaViewer instanceof IIIFMangaViewer)) {
@@ -81,7 +87,6 @@ class ImageList extends HTMLUListElement {
     appendChild(newChild) {
         if (newChild instanceof ImageListItem) {
             super.appendChild(newChild);
-            newChild.initialize();
         }
     }
 }
@@ -94,6 +99,34 @@ customElements.define("image-list", ImageList, {extends: "ul"});
 class IIIFMangaViewer extends HTMLDivElement {
     constructor() {
         super();
+        this.initialize();
+    }
+
+    /**
+     * 要素が DOM から削除されるたびに呼び出されます。
+     * クリーンアップ コードの実行（イベント リスナーの削除など）に役立ちます。
+     * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
+     */
+    disconnectedCallback() {
+        // メモリ開放
+        this.viewer.free();
+        this.imageList = undefined;
+    }
+
+    static get observedAttributes() {
+        return ['manifest'];
+    }
+
+    /**
+     * 属性が追加、削除、更新、または置換されたとき。
+     * パーサーによって要素が作成されたときの初期値に対して、またはアップグレードされたときにも呼び出されます。
+     * 注: observedAttributes プロパティに示されている属性のみがこのコールバックを受け取ります。
+     * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
+     * @param name
+     * @param oldValue
+     * @param newValue
+     */
+    attributeChangedCallback(name, oldValue, newValue) {
         this.initialize();
     }
 
