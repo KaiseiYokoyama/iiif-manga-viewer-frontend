@@ -1,3 +1,7 @@
+i {
+  font-style: normal;
+}
+
 div[is=iiif-manga-viewer] {
   flex: 1 1;
   max-width: 100vw;
@@ -17,6 +21,16 @@ div[is=iiif-manga-viewer] ul.image-list {
   position: absolute;
   top: 0;
   left: 0;
+}
+div[is=iiif-manga-viewer] ul.image-list li.image-list-item i.status-icon:after {
+  font-family: "Material Icons";
+  content: "image";
+  color: #26a69a;
+}
+div[is=iiif-manga-viewer] ul.image-list li.image-list-item[loading] i.status-icon:after {
+  font-family: "Material Icons";
+  content: "compare";
+  color: #bdbdbd;
 }
 
 /*# sourceMappingURL=viewer.css.map */

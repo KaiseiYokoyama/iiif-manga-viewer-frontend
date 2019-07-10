@@ -22,6 +22,14 @@ class ImageListItem extends HTMLLIElement {
         }
     }
 
+    loading() {
+        this.setAttribute('loading', '');
+    }
+
+    loaded() {
+        this.removeAttribute('loading');
+    }
+
     /**
      * 要素が DOM に挿入されるたびに呼び出されます。
      * リソースの取得やレンダリングなどの、セットアップ コードの実行に役立ちます。
@@ -44,6 +52,12 @@ class ImageListItem extends HTMLLIElement {
             if (!imageList) return;
         }
         this.imageList = imageList;
+
+        // preloaderを表示
+        // statusを表示するiconをセット cssで制御
+        const i = document.createElement('i');
+        i.classList.add('status-icon', 'right');
+        this.appendChild(i);
     }
 }
 
@@ -58,6 +72,22 @@ class ImageList extends HTMLUListElement {
 
         // 必要なclassを追加
         this.classList.add('collection', 'with-header', 'image-list');
+    }
+
+    /**
+     * 要素が DOM に挿入されるたびに呼び出されます。
+     * リソースの取得やレンダリングなどの、セットアップ コードの実行に役立ちます。
+     * 一般に、この時点まで作業を遅らせるようにする必要があります。
+     * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
+     */
+    connectedCallback() {
+        // 自分の所属するマンガビューアを登録しておく
+        let mangaViewer = this;
+        while (!(mangaViewer instanceof IIIFMangaViewer)) {
+            mangaViewer = mangaViewer.parentElement;
+            if (!mangaViewer) return;
+        }
+        this.mangaViewer = mangaViewer;
     }
 
     /**
@@ -87,7 +117,21 @@ class ImageList extends HTMLUListElement {
     appendChild(newChild) {
         if (newChild instanceof ImageListItem) {
             super.appendChild(newChild);
+
+            // loading状態に設定
+            newChild.loading();
+
+            // const index = this.querySelectorAll('.image-list-item').length;
+            // const image = this.mangaViewer.viewer.get_image_elem(index);
+            // image.addEventListener('load', () => {
+            //     // loaded状態に設定
+            //     newChild.loaded();
+            // });
         }
+    }
+
+    getChild(index) {
+        return this.querySelectorAll('.image-list-item')[index];
     }
 }
 
@@ -127,7 +171,7 @@ class IIIFMangaViewer extends HTMLDivElement {
      * @param newValue
      */
     attributeChangedCallback(name, oldValue, newValue) {
-        this.initialize();
+        // this.initialize();
     }
 
     async initialize() {
@@ -178,13 +222,22 @@ class IIIFMangaViewer extends HTMLDivElement {
                         this.remove();
                     }
                     this.show(0);
-                    new Thread(() => {
+
+                    // 裏でloadを実行
+                    let load = () => {
                         for (let i = 0; i < this.viewer.size(); i++) {
                             if (!this.viewer.is_loading(i)) {
                                 this.viewer.load(i);
                             }
+                            // loadが完了したらimageListの状態を変える
+                            const image = this.viewer.get_image_elem(i);
+                            const item = this.imageList.getChild(i);
+                            image.addEventListener('load', () => {
+                                item.loaded();
+                            });
                         }
-                    }).execute().terminate();
+                    };
+                    new Thread(load()).execute();
                 };
                 xhr.send();
             }
@@ -207,10 +260,14 @@ class IIIFMangaViewer extends HTMLDivElement {
             let progress = this.progress();
             let elem = this.viewer.get_image_elem(index);
             if (elem) {
-                elem.onload = () => {
+                elem.addEventListener('load', () => {
                     this.removeChild(progress);
                     this.show(index);
-                }
+                });
+                // elem.onload = () => {
+                //     this.removeChild(progress);
+                //     this.show(index);
+                // }
             }
         } else {
             this.imageList.activate(index);
