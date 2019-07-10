@@ -90,7 +90,6 @@ impl Viewer {
         for i in 0..images.len() {
             let image = &images[i].src;
             if image == &src {
-                log("found");
                 index = i;
                 break;
             }

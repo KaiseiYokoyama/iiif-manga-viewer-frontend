@@ -1,6 +1,86 @@
 import init, {Viewer, Direction} from '../../pkg/iiif_manga_viewer_frontend.js';
 
 /**
+ * ビューアのImageListのli要素
+ */
+class ImageListItem extends HTMLLIElement {
+    constructor() {
+        super();
+
+        // 必要なclassを追加
+        this.classList.add('collection-item');
+
+        // onclickを設定: 表示
+        this.onclick = () => {
+            const src = this.getAttribute('src');
+            // 表示
+            this.mangaViewer.show(this.mangaViewer.viewer.get_index_by_src(src));
+            // deactivate
+            this.imageList.deactivate();
+            // activate
+            this.classList.toggle('active');
+        }
+    }
+
+    initialize() {
+        // 自分の所属するマンガビューアを登録しておく
+        let mangaViewer = this;
+        while (mangaViewer.getAttribute('is') !== 'iiif-manga-viewer') {
+            mangaViewer = mangaViewer.parentElement;
+            if (!mangaViewer) return;
+        }
+        this.mangaViewer = mangaViewer;
+
+        // 親要素を登録しておく
+        let imageList = this;
+        while (imageList.getAttribute('is') !== 'image-list') {
+            imageList = imageList.parentElement;
+            if (!imageList) return;
+        }
+        this.imageList = imageList;
+        console.log('imageList: ' + imageList);
+
+    }
+}
+
+customElements.define("image-list-item", ImageListItem, {extends: "li"});
+
+/**
+ * ビューアのImageList
+ */
+class ImageList extends HTMLUListElement {
+    constructor() {
+        super();
+
+        // 必要なclassを追加
+        this.classList.add('collection', 'with-header');
+    }
+
+    /**
+     * 子要素をdeactivateする
+     */
+    deactivate() {
+        const children = this.children;
+        for (const child of children) {
+            child.classList.remove('active');
+        }
+    }
+
+    /**
+     * 子要素を追加する。ImageListItem以外は無視。
+     * @param newChild {ImageListItem} リストの子要素
+     */
+    appendChild(newChild) {
+        if (newChild.getAttribute('is') === 'image-list-item') {
+            super.appendChild(newChild);
+            newChild.initialize();
+        }
+    }
+}
+
+customElements.define("image-list", ImageList, {extends: "ul"});
+
+/**
  * ビューア本体
  */
 class IIIFMangaViewer extends HTMLDivElement {
@@ -19,8 +99,7 @@ class IIIFMangaViewer extends HTMLDivElement {
         this.appendChild(canvas);
         // ImageListを設定
         const imageList = document.createElement('ul', {is: "image-list"});
-        // const imageList = document.createElement('ul');
-        console.log(imageList);
+        console.log('imageList.is=' + imageList.getAttribute('is'));
         this.appendChild(imageList);
         this.viewer = new Viewer(canvas, imageList);
         {
@@ -107,57 +186,3 @@ class IIIFMangaViewer extends HTMLDivElement {
 }
 
 customElements.define("iiif-manga-viewer", IIIFMangaViewer, {extends: "div"});
-
-/**
- * ビューアのImageList
- */
-class ImageList extends HTMLUListElement {
-    constructor() {
-        super();
-
-        // 必要なclassを追加
-        this.classList.add('collection', 'with-header');
-    }
-
-    /**
-     * 子要素を追加する。ImageListItem以外は無視。
-     * @param newChild {ImageListItem} リストの子要素
-     */
-    appendChild(newChild) {
-        if (newChild.getAttribute('is') === 'image-list-item') {
-            super.appendChild(newChild);
-            newChild.setMangaviewer();
-        }
-    }
-}
-
-customElements.define("image-list", ImageList, {extends: "ul"});
-
-
-/**
- * ビューアのImageListのli要素
- */
-class ImageListItem extends HTMLLIElement {
-    constructor() {
-        super();
-        this.onclick = () => {
-            const src = this.getAttribute('src');
-            console.log("onclick: "+src);
-            // 表示
-            this.mangaViewer.show(this.mangaViewer.viewer.get_index_by_src(src));
-        }
-    }
-
-    setMangaviewer() {
-        // 自分の所属するマンガビューアを登録しておく
-        let mangaViewer = this;
-        while (mangaViewer.getAttribute('is') !== 'iiif-manga-viewer') {
-            mangaViewer = mangaViewer.parentElement;
-            if (!mangaViewer) return;
-        }
-        this.mangaViewer = mangaViewer;
-
-    }
-}
-
-customElements.define("image-list-item", ImageListItem, {extends: "li"});
