@@ -8,7 +8,7 @@ class ImageListItem extends HTMLLIElement {
         super();
 
         // 必要なclassを追加
-        this.classList.add('collection-item','image-list-item');
+        this.classList.add('collection-item', 'image-list-item');
 
         // onclickを設定: 表示
         this.onclick = () => {
@@ -51,7 +51,7 @@ class ImageList extends HTMLUListElement {
         super();
 
         // 必要なclassを追加
-        this.classList.add('collection', 'with-header','image-list');
+        this.classList.add('collection', 'with-header', 'image-list');
     }
 
     /**
@@ -62,6 +62,16 @@ class ImageList extends HTMLUListElement {
         for (const child of children) {
             child.classList.remove('active');
         }
+    }
+
+    /**
+     * 特定の子要素のみをactivateする
+     * @param index
+     */
+    activate(index) {
+        this.deactivate();
+        const item = this.children[index];
+        item.classList.add('active');
     }
 
     /**
@@ -97,8 +107,7 @@ class IIIFMangaViewer extends HTMLDivElement {
         this.appendChild(canvas);
         // ImageListを設定
         const imageList = document.createElement('ul', {is: "image-list"});
-        console.log('imageList.is=' + imageList.getAttribute('is'));
-        console.log('imageList instanceof ImageList: ' + (imageList instanceof ImageList));
+        this.imageList = imageList;
         this.appendChild(imageList);
         this.viewer = new Viewer(canvas, imageList);
         {
@@ -170,6 +179,8 @@ class IIIFMangaViewer extends HTMLDivElement {
                     this.show(index);
                 }
             }
+        } else {
+            this.imageList.activate(index);
         }
     };
 
