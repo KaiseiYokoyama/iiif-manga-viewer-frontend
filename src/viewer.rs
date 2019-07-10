@@ -1,7 +1,7 @@
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 
-use web_sys::{Element, HtmlImageElement, HtmlCanvasElement, CanvasRenderingContext2d, MouseEvent};
+use web_sys::{Element, HtmlImageElement, HtmlCanvasElement, CanvasRenderingContext2d, MouseEvent, Node};
 
 use js_sys::Promise;
 use crate::iiif_manifest::Manifest;
@@ -9,13 +9,13 @@ use crate::iiif_manifest::Manifest;
 #[wasm_bindgen]
 extern "C" {
     #[wasm_bindgen(js_namespace = console)]
-    fn log(s: &str);
+    pub fn log(s: &str);
 }
 
 #[wasm_bindgen]
 struct Viewer {
     canvas: Canvas,
-    //    image_list: ImageList,
+    image_list: ImageList,
     images: Vec<ViewerImage>,
     manifest: Option<Manifest>,
     pub index: usize,
@@ -25,9 +25,9 @@ struct Viewer {
 impl Viewer {
     #[wasm_bindgen(constructor)]
     /// Viewerのコンストラクタ
-    pub fn new(canvas: Element, page_list: Element) -> Self {
+    pub fn new(canvas: Element, image_list: Element) -> Self {
         std::panic::set_hook(Box::new(console_error_panic_hook::hook));
-        Self { canvas: Canvas::new(canvas), images: Vec::new(), manifest: None, index: 0 }
+        Self { canvas: Canvas::new(canvas), image_list: ImageList::new(image_list), images: Vec::new(), manifest: None, index: 0 }
     }
 
     #[wasm_bindgen]
@@ -48,6 +48,9 @@ impl Viewer {
             log(image.src());
             self.push_image(image.src());
         }
+        // set image_list
+        // todo デバッグ。何か問題がある
+        self.image_list.set_manifest(&manifest);
         self.manifest = Some(manifest);
         true
     }
@@ -77,6 +80,21 @@ impl Viewer {
             return false;
         }
         return true;
+    }
+
+    #[wasm_bindgen]
+    /// イメージをsrcから表示する
+    pub fn get_index_by_src(&mut self, src: String) -> usize {
+        let images = &self.images;
+        let mut index = self.index;
+        for i in 0..images.len() {
+            let image = &images[i].src;
+            if image == &src {
+                index = i;
+                break;
+            }
+        }
+        index
     }
 
     #[wasm_bindgen]
@@ -223,10 +241,6 @@ impl Canvas {
     }
 }
 
-struct ImageList {
-    element: Element,
-}
-
 struct ViewerImage {
     pub image: Option<HtmlImageElement>,
     pub src: String,
@@ -269,6 +283,31 @@ impl ViewerImage {
         image.set_src(&self.src);
         self.image = Some(image);
     }
+}
+
+struct ImageList {
+    element: Element
+}
+
+impl ImageList {
+    pub fn new(element: Element) -> Self {
+//        &element.class_list().add_1("collection");
+//        &element.set_attribute("is","image-list");
+        Self { element }
+    }
+
+    /// manifestから中身をセットする
+    pub fn set_manifest(&self, manifest: &Manifest) {
+        let elems = manifest.to_image_list();
+        for elem in elems {
+            self.element.append_child(&Node::from(elem));
+        }
+    }
+}
+
+struct ImageListItem {
+    src: String,
+    name: String,
 }
 
 #[derive(Deserialize, Debug, Serialize, Default)]

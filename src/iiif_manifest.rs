@@ -1,5 +1,13 @@
 use std::str::FromStr;
 
+use crate::viewer::log;
+use wasm_bindgen::prelude::*;
+use web_sys::{Element, HtmlLiElement, ElementCreationOptions};
+
+pub trait ManifestSubstructure {
+    fn to_image_list(&self) -> Vec<Element>;
+}
+
 #[derive(Deserialize, Debug, Serialize)]
 pub struct Manifest {
     #[serde(rename = "@context")]
@@ -29,6 +37,12 @@ impl Manifest {
 
         return images;
     }
+
+    pub fn to_image_list(&self) -> Vec<Element> {
+        let mut elems = Vec::new();
+        self.sequences.iter().for_each(|can| elems.append(&mut can.to_image_list()));
+        elems
+    }
 }
 
 impl FromStr for Manifest {
@@ -48,6 +62,14 @@ struct Sequence {
     canvases: Vec<Canvas>,
 }
 
+impl ManifestSubstructure for Sequence {
+    fn to_image_list(&self) -> Vec<Element> {
+        let mut elems = Vec::new();
+        self.canvases.iter().for_each(|can| elems.append(&mut can.to_image_list()));
+        elems
+    }
+}
+
 #[derive(Deserialize, Debug, Serialize)]
 struct Canvas {
     #[serde(rename = "@id")]
@@ -58,6 +80,33 @@ struct Canvas {
     height: u32,
     label: String,
     images: Vec<Image>,
+}
+
+impl ManifestSubstructure for Canvas {
+    fn to_image_list(&self) -> Vec<Element> {
+        let mut elems = Vec::new();
+        let label = &self.label;
+        for image in &self.images {
+            // srcを取得
+            let src = &image.resource.id.clone();
+            // liをdocumentに追加
+            let window = web_sys::window().expect("no global `window` exists");
+            let document = window.document().expect("should have a document on window");
+            let li = match document.create_element_with_element_creation_options("li", ElementCreationOptions::new().is("image-list-item")) {
+                Ok(e) => e,
+                Err(_) => { continue; }
+            };
+            // liの詳細設定: srcを設定
+            li.set_attribute("src", &src);
+            // liの詳細設定: CustomElementを設定
+//            li.set_attribute("is", "image-list-item");
+            // liの詳細設定: inner_htmlを設定
+            li.set_inner_html(label);
+            // push!
+            elems.push(li);
+        }
+        elems
+    }
 }
 
 #[derive(Deserialize, Debug, Serialize)]

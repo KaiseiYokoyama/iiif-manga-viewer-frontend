@@ -1,9 +1,177 @@
 import init, {Viewer, Direction} from '../../pkg/iiif_manga_viewer_frontend.js';
 
+/**
+ * ビューアのImageListのli要素
+ */
+class ImageListItem extends HTMLLIElement {
+    constructor() {
+        super();
+
+        // 必要なclassを追加
+        this.classList.add('collection-item', 'image-list-item');
+
+        // onclickを設定: 表示
+        this.onclick = () => {
+            const src = this.getAttribute('src');
+            // 表示
+            this.mangaViewer.show(this.mangaViewer.viewer.get_index_by_src(src));
+            // deactivate
+            this.imageList.deactivate();
+            // activate
+            this.classList.toggle('active');
+        }
+    }
+
+    loading() {
+        this.setAttribute('loading', '');
+    }
+
+    loaded() {
+        this.removeAttribute('loading');
+    }
+
+    /**
+     * 要素が DOM に挿入されるたびに呼び出されます。
+     * リソースの取得やレンダリングなどの、セットアップ コードの実行に役立ちます。
+     * 一般に、この時点まで作業を遅らせるようにする必要があります。
+     * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
+     */
+    connectedCallback() {
+        // 自分の所属するマンガビューアを登録しておく
+        let mangaViewer = this;
+        while (!(mangaViewer instanceof IIIFMangaViewer)) {
+            mangaViewer = mangaViewer.parentElement;
+            if (!mangaViewer) return;
+        }
+        this.mangaViewer = mangaViewer;
+
+        // 親要素を登録しておく
+        let imageList = this;
+        while (!(imageList instanceof ImageList)) {
+            imageList = imageList.parentElement;
+            if (!imageList) return;
+        }
+        this.imageList = imageList;
+
+        // preloaderを表示
+        // statusを表示するiconをセット cssで制御
+        const i = document.createElement('i');
+        i.classList.add('status-icon', 'right');
+        this.appendChild(i);
+    }
+}
+
+customElements.define("image-list-item", ImageListItem, {extends: "li"});
+
+/**
+ * ビューアのImageList
+ */
+class ImageList extends HTMLUListElement {
+    constructor() {
+        super();
+
+        // 必要なclassを追加
+        this.classList.add('collection', 'with-header', 'image-list');
+    }
+
+    /**
+     * 要素が DOM に挿入されるたびに呼び出されます。
+     * リソースの取得やレンダリングなどの、セットアップ コードの実行に役立ちます。
+     * 一般に、この時点まで作業を遅らせるようにする必要があります。
+     * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
+     */
+    connectedCallback() {
+        // 自分の所属するマンガビューアを登録しておく
+        let mangaViewer = this;
+        while (!(mangaViewer instanceof IIIFMangaViewer)) {
+            mangaViewer = mangaViewer.parentElement;
+            if (!mangaViewer) return;
+        }
+        this.mangaViewer = mangaViewer;
+    }
+
+    /**
+     * 子要素をdeactivateする
+     */
+    deactivate() {
+        const children = this.children;
+        for (const child of children) {
+            child.classList.remove('active');
+        }
+    }
+
+    /**
+     * 特定の子要素のみをactivateする
+     * @param index
+     */
+    activate(index) {
+        this.deactivate();
+        const item = this.children[index];
+        item.classList.add('active');
+    }
+
+    /**
+     * 子要素を追加する。ImageListItem以外は無視。
+     * @param newChild {ImageListItem} リストの子要素
+     */
+    appendChild(newChild) {
+        if (newChild instanceof ImageListItem) {
+            super.appendChild(newChild);
+
+            // loading状態に設定
+            newChild.loading();
+
+            // const index = this.querySelectorAll('.image-list-item').length;
+            // const image = this.mangaViewer.viewer.get_image_elem(index);
+            // image.addEventListener('load', () => {
+            //     // loaded状態に設定
+            //     newChild.loaded();
+            // });
+        }
+    }
+
+    getChild(index) {
+        return this.querySelectorAll('.image-list-item')[index];
+    }
+}
+
+customElements.define("image-list", ImageList, {extends: "ul"});
+
+/**
+ * ビューア本体
+ */
 class IIIFMangaViewer extends HTMLDivElement {
     constructor() {
         super();
         this.initialize();
+    }
+
+    /**
+     * 要素が DOM から削除されるたびに呼び出されます。
+     * クリーンアップ コードの実行（イベント リスナーの削除など）に役立ちます。
+     * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
+     */
+    disconnectedCallback() {
+        // メモリ開放
+        this.viewer.free();
+        this.imageList = undefined;
+    }
+
+    static get observedAttributes() {
+        return ['manifest'];
+    }
+
+    /**
+     * 属性が追加、削除、更新、または置換されたとき。
+     * パーサーによって要素が作成されたときの初期値に対して、またはアップグレードされたときにも呼び出されます。
+     * 注: observedAttributes プロパティに示されている属性のみがこのコールバックを受け取ります。
+     * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
+     * @param name
+     * @param oldValue
+     * @param newValue
+     */
+    attributeChangedCallback(name, oldValue, newValue) {
+        // this.initialize();
     }
 
     async initialize() {
@@ -15,7 +183,8 @@ class IIIFMangaViewer extends HTMLDivElement {
         const canvas = document.createElement('canvas');
         this.appendChild(canvas);
         // ImageListを設定
-        const imageList = document.createElement('div');
+        const imageList = document.createElement('ul', {is: "image-list"});
+        this.imageList = imageList;
         this.appendChild(imageList);
         this.viewer = new Viewer(canvas, imageList);
         {
@@ -48,18 +217,27 @@ class IIIFMangaViewer extends HTMLDivElement {
                 xhr.open('GET', manifestURL);
                 xhr.onload = () => {
                     let manifest = xhr.responseText;
-                    if (!this.viewer.set_manifest(manifest)){
+                    if (!this.viewer.set_manifest(manifest)) {
                         // manifestの読み取りに失敗すると消える
                         this.remove();
                     }
                     this.show(0);
-                    new Thread(() => {
+
+                    // 裏でloadを実行
+                    let load = () => {
                         for (let i = 0; i < this.viewer.size(); i++) {
                             if (!this.viewer.is_loading(i)) {
                                 this.viewer.load(i);
                             }
+                            // loadが完了したらimageListの状態を変える
+                            const image = this.viewer.get_image_elem(i);
+                            const item = this.imageList.getChild(i);
+                            image.addEventListener('load', () => {
+                                item.loaded();
+                            });
                         }
-                    }).execute().terminate();
+                    };
+                    new Thread(load()).execute();
                 };
                 xhr.send();
             }
@@ -82,11 +260,17 @@ class IIIFMangaViewer extends HTMLDivElement {
             let progress = this.progress();
             let elem = this.viewer.get_image_elem(index);
             if (elem) {
-                elem.onload = () => {
+                elem.addEventListener('load', () => {
                     this.removeChild(progress);
                     this.show(index);
-                }
+                });
+                // elem.onload = () => {
+                //     this.removeChild(progress);
+                //     this.show(index);
+                // }
             }
+        } else {
+            this.imageList.activate(index);
         }
     };
 
