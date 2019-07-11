@@ -26,6 +26,7 @@ class IconViewItem extends HTMLElement {
 
         // label
         const label = document.createElement('label');
+        label.innerText = this.getAttribute('label');
         this.appendChild(label);
         this.label = label;
 
