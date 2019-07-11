@@ -1,10 +1,11 @@
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 
-use web_sys::{Element, HtmlImageElement, HtmlCanvasElement, CanvasRenderingContext2d, MouseEvent, Node, ElementCreationOptions};
-
+use web_sys::{Element, HtmlImageElement, HtmlCanvasElement, CanvasRenderingContext2d, MouseEvent, Node};
 use js_sys::Promise;
+
 use crate::iiif_manifest::Manifest;
+use self::view::list_view::ListView;
 
 #[wasm_bindgen]
 extern "C" {
@@ -16,6 +17,7 @@ extern "C" {
 struct Viewer {
     canvas: Canvas,
     list_view: ListView,
+//    icon_view: IconView,
     images: Vec<ViewerImage>,
     manifest: Option<Manifest>,
     pub index: usize,
@@ -294,55 +296,61 @@ impl ViewerImage {
     }
 }
 
-struct ListView {
-    element: Element
-}
+mod view {
+    pub mod list_view {
+        use web_sys::{Element, ElementCreationOptions, Node};
 
-impl ListView {
-    pub fn new(element: Element) -> Self {
-//        &element.class_list().add_1("collection");
-//        &element.set_attribute("is","image-list");
-        Self { element }
-    }
+        use crate::viewer::ViewerImage;
+        use crate::iiif_manifest::Manifest;
 
-    /// manifestから中身をセットする
-    pub fn set_manifest(&self, manifest: &Manifest) {
-        let elems = manifest.to_image_list();
-        for elem in elems {
-            self.element.append_child(&Node::from(elem));
+        pub struct ListView {
+            element: Element
+        }
+
+        impl ListView {
+            pub fn new(element: Element) -> Self {
+                Self { element }
+            }
+
+            /// manifestから中身をセットする
+            pub fn set_manifest(&self, manifest: &Manifest) {
+                let elems = manifest.to_image_list();
+                for elem in elems {
+                    self.element.append_child(&Node::from(elem));
+                }
+            }
+
+            /// 表示する画像の一覧から中身をセットする
+            pub fn initialize(&self, viewer_images: &Vec<ViewerImage>) {
+                for image in viewer_images {
+                    // srcを取得
+                    let src = &image.src;
+                    // labelを取得
+                    let label = &image.label;
+                    // liをdocumentに追加
+                    let window = web_sys::window().expect("no global `window` exists");
+                    let document = window.document().expect("should have a document on window");
+                    let li = match document.create_element_with_element_creation_options("li", ElementCreationOptions::new().is("image-list-item")) {
+                        Ok(e) => e,
+                        Err(_) => { continue; }
+                    };
+                    // liの詳細設定: srcを設定
+                    li.set_attribute("src", src);
+                    // liの詳細設定: inner_htmlを設定
+                    li.set_inner_html(label);
+                    // set!
+                    self.element.append_child(&Node::from(li));
+                }
+            }
+        }
+
+        struct ListViewItem {
+            src: String,
+            name: String,
         }
     }
-
-    /// 表示する画像の一覧から中身をセットする
-    pub fn initialize(&self, viewer_images: &Vec<ViewerImage>) {
-        for image in viewer_images {
-            // srcを取得
-            let src = &image.src;
-            // labelを取得
-            let label = &image.label;
-            // liをdocumentに追加
-            let window = web_sys::window().expect("no global `window` exists");
-            let document = window.document().expect("should have a document on window");
-            let li = match document.create_element_with_element_creation_options("li", ElementCreationOptions::new().is("image-list-item")) {
-                Ok(e) => e,
-                Err(_) => { continue; }
-            };
-            // liの詳細設定: srcを設定
-            li.set_attribute("src", src);
-            // liの詳細設定: CustomElementを設定
-//            li.set_attribute("is", "image-list-item");
-            // liの詳細設定: inner_htmlを設定
-            li.set_inner_html(label);
-            // set!
-            self.element.append_child(&Node::from(li));
-        }
-    }
 }
 
-struct ImageListItem {
-    src: String,
-    name: String,
-}
 
 #[derive(Deserialize, Debug, Serialize, Default)]
 struct ImageSrcs {
