@@ -22,7 +22,7 @@ class IconViewItem extends HTMLElement {
      */
     connectedCallback() {
         // initialize
-        this.classList.add('col', 'm4', 'l3');
+        // this.classList.add();
 
         // label
         const label = document.createElement('label');
@@ -50,7 +50,7 @@ class IconViewItem extends HTMLElement {
      * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
      */
     attributeChangedCallback(attributeName, oldValue, newValue, namespace) {
-        if (attributeName === 'label'&& this.label) {
+        if (attributeName === 'label' && this.label) {
             this.label.innerText = newValue;
         }
     }
@@ -251,6 +251,38 @@ class ListView extends HTMLUListElement {
 customElements.define("image-list", ListView, {extends: "ul"});
 
 /**
+ * Viewをまとめて配置するelement
+ */
+class Views extends HTMLElement {
+    constructor() {
+        super();
+        // this.classList.add('views');
+    }
+
+    /**
+     * 要素が DOM に挿入されるたびに呼び出されます。
+     * リソースの取得やレンダリングなどの、セットアップ コードの実行に役立ちます。
+     * 一般に、この時点まで作業を遅らせるようにする必要があります。
+     * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
+     */
+    connectedCallback() {
+        this.classList.add('views');
+    }
+
+    /**
+     * 子要素を追加する。View以外は無視。
+     * @param newChild {ListView,IconView} 子要素
+     */
+    appendChild(newChild) {
+        if (newChild instanceof ListView || newChild instanceof IconView) {
+            super.appendChild(newChild);
+        }
+    }
+}
+
+customElements.define("view-s", Views);
+
+/**
  * ビューア本体
  */
 class IIIFMangaViewer extends HTMLDivElement {
@@ -306,18 +338,22 @@ class IIIFMangaViewer extends HTMLDivElement {
         const canvas = document.createElement('canvas');
         this.appendChild(canvas);
 
+        // viewsを設定
+        const views = document.createElement('view-s');
+        this.appendChild(views);
+
         // ListViewを設定
         const listView = document.createElement('ul', {is: "image-list"});
         this.listView = listView;
-        this.appendChild(listView);
+        views.appendChild(listView);
 
         // IconViewを設定
         const iconView = document.createElement('icon-view');
         this.iconView = iconView;
-        this.appendChild(iconView);
+        views.appendChild(iconView);
 
         // viewerを設定
-        this.viewer = new Viewer(canvas, listView,iconView);
+        this.viewer = new Viewer(canvas, listView, iconView);
         {
             canvas.onmousedown = (event) => {
                 this.viewer.mousedown(event);
