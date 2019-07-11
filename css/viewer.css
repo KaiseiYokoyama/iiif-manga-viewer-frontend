@@ -19,7 +19,7 @@ div[is=iiif-manga-viewer] view-s {
   left: 0;
   top: 0;
   display: flex;
-  background-color: white;
+  background-color: rgba(255, 255, 255, 0.87);
 }
 div[is=iiif-manga-viewer] view-s ul.image-list {
   overflow-y: scroll;
