@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use crate::viewer::log;
+use crate::viewer::{log, ViewerImage};
 use wasm_bindgen::prelude::*;
 use web_sys::{Element, HtmlLiElement, ElementCreationOptions};
 
@@ -24,18 +24,23 @@ pub struct Manifest {
 }
 
 impl Manifest {
-    pub fn get_images(&self) -> Vec<&Image> {
-        let mut images = Vec::new();
+    pub fn get_viewer_images(&self) -> Vec<ViewerImage> {
+        let mut viewer_images = Vec::new();
 
         for sequence in &self.sequences {
             for canvas in &sequence.canvases {
+                let label = &canvas.label;
+                let thumbnail = match &canvas.thumbnail {
+                    Some(t) => { Some(t.id.as_str()) }
+                    None => None,
+                };
                 for image in &canvas.images {
-                    images.push(image);
+                    let viewer_image = ViewerImage::new(image.src(), label, thumbnail);
+                    viewer_images.push(viewer_image);
                 }
             }
         }
-
-        return images;
+        viewer_images
     }
 
     pub fn to_image_list(&self) -> Vec<Element> {
@@ -59,6 +64,7 @@ struct Sequence {
     id: Option<String>,
     #[serde(rename = "@type")]
     type_: String,
+    thumbnail: Option<Thumbnail>,
     canvases: Vec<Canvas>,
 }
 
@@ -79,6 +85,7 @@ struct Canvas {
     width: u32,
     height: u32,
     label: String,
+    thumbnail: Option<Thumbnail>,
     images: Vec<Image>,
 }
 
@@ -122,6 +129,15 @@ impl Image {
     pub fn src(&self) -> &String {
         &self.resource.id
     }
+}
+
+#[derive(Deserialize, Debug, Serialize)]
+pub struct Thumbnail {
+    #[serde(rename = "@id")]
+    id: String,
+    #[serde(rename = "@type")]
+    type_: String,
+    format: String,
 }
 
 #[derive(Deserialize, Debug, Serialize)]

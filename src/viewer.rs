@@ -1,7 +1,7 @@
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 
-use web_sys::{Element, HtmlImageElement, HtmlCanvasElement, CanvasRenderingContext2d, MouseEvent, Node};
+use web_sys::{Element, HtmlImageElement, HtmlCanvasElement, CanvasRenderingContext2d, MouseEvent, Node, ElementCreationOptions};
 
 use js_sys::Promise;
 use crate::iiif_manifest::Manifest;
@@ -43,15 +43,15 @@ impl Viewer {
         };
 
         // push images
-        let images = manifest.get_images();
-        for image in images {
-            log(image.src());
-            self.push_image(image.src());
-        }
+        let images = manifest.get_viewer_images();
         // set image_list
-        // todo デバッグ。何か問題がある
-        self.image_list.set_manifest(&manifest);
+        self.image_list.initialize(&images);
+
+        // set images
+        self.images = images;
+        // set manifest
         self.manifest = Some(manifest);
+
         true
     }
 
@@ -179,10 +179,9 @@ impl Viewer {
 /// Viewer.imagesに関する実装
 impl Viewer {
     /// イメージを追加
-    fn push_image(&mut self, src: &str) {
-        self.images.push(ViewerImage::new(src));
-    }
-
+//    fn push_image(&mut self, src: &str, label: &str) {
+//        self.images.push(ViewerImage::new(src, label));
+//    }
     #[wasm_bindgen]
     /// HtmlImageElementを取得
     pub fn get_image_elem(&self, index: usize) -> Option<HtmlImageElement> {
@@ -241,8 +240,10 @@ impl Canvas {
     }
 }
 
-struct ViewerImage {
+pub struct ViewerImage {
     pub image: Option<HtmlImageElement>,
+    pub thumbnail: Option<HtmlImageElement>,
+    pub label: String,
     pub src: String,
     pub position_x: f64,
     pub position_y: f64,
@@ -252,11 +253,19 @@ struct ViewerImage {
 }
 
 impl ViewerImage {
-    pub fn new(src: &str) -> Self {
+    pub fn new(src: &str, label: &str, thumbnail: Option<&str>) -> Self {
         let src = src.to_string();
+        let label = label.to_string();
+        let thumbnail = thumbnail.map(|string| {
+            let image = HtmlImageElement::new().unwrap();
+            image.set_src(string);
+            image
+        });
         Self {
             image: None,
+            thumbnail,
             src,
+            label,
             position_x: 0.0,
             position_y: 0.0,
             original_x: 0.0,
@@ -301,6 +310,31 @@ impl ImageList {
         let elems = manifest.to_image_list();
         for elem in elems {
             self.element.append_child(&Node::from(elem));
+        }
+    }
+
+    /// 表示する画像の一覧から中身をセットする
+    pub fn initialize(&self, viewer_images: &Vec<ViewerImage>) {
+        for image in viewer_images {
+            // srcを取得
+            let src = &image.src;
+            // labelを取得
+            let label = &image.label;
+            // liをdocumentに追加
+            let window = web_sys::window().expect("no global `window` exists");
+            let document = window.document().expect("should have a document on window");
+            let li = match document.create_element_with_element_creation_options("li", ElementCreationOptions::new().is("image-list-item")) {
+                Ok(e) => e,
+                Err(_) => { continue; }
+            };
+            // liの詳細設定: srcを設定
+            li.set_attribute("src", src);
+            // liの詳細設定: CustomElementを設定
+//            li.set_attribute("is", "image-list-item");
+            // liの詳細設定: inner_htmlを設定
+            li.set_inner_html(label);
+            // set!
+            self.element.append_child(&Node::from(li));
         }
     }
 }
