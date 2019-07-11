@@ -15,7 +15,7 @@ extern "C" {
 #[wasm_bindgen]
 struct Viewer {
     canvas: Canvas,
-    image_list: ImageList,
+    list_view: ListView,
     images: Vec<ViewerImage>,
     manifest: Option<Manifest>,
     pub index: usize,
@@ -27,7 +27,7 @@ impl Viewer {
     /// Viewerのコンストラクタ
     pub fn new(canvas: Element, image_list: Element) -> Self {
         std::panic::set_hook(Box::new(console_error_panic_hook::hook));
-        Self { canvas: Canvas::new(canvas), image_list: ImageList::new(image_list), images: Vec::new(), manifest: None, index: 0 }
+        Self { canvas: Canvas::new(canvas), list_view: ListView::new(image_list), images: Vec::new(), manifest: None, index: 0 }
     }
 
     #[wasm_bindgen]
@@ -45,7 +45,7 @@ impl Viewer {
         // push images
         let images = manifest.get_viewer_images();
         // set image_list
-        self.image_list.initialize(&images);
+        self.list_view.initialize(&images);
 
         // set images
         self.images = images;
@@ -294,11 +294,11 @@ impl ViewerImage {
     }
 }
 
-struct ImageList {
+struct ListView {
     element: Element
 }
 
-impl ImageList {
+impl ListView {
     pub fn new(element: Element) -> Self {
 //        &element.class_list().add_1("collection");
 //        &element.set_attribute("is","image-list");
