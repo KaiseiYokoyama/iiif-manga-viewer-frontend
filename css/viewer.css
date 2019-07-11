@@ -26,9 +26,13 @@ div[is=iiif-manga-viewer] view-s ul.image-list {
   overflow-y: scroll;
   margin: 0;
   cursor: pointer;
+  order: 1;
 }
 div[is=iiif-manga-viewer] view-s ul.image-list.hide {
   display: none;
+}
+div[is=iiif-manga-viewer] view-s ul.image-list li.image-list-item:hover {
+  background-color: rgba(0, 0, 0, 0.2);
 }
 div[is=iiif-manga-viewer] view-s ul.image-list li.image-list-item i.status-icon:after {
   font-family: "Material Icons";
@@ -45,6 +49,7 @@ div[is=iiif-manga-viewer] view-s icon-view {
   flex-wrap: wrap;
   align-items: center;
   overflow-y: scroll;
+  order: 0;
 }
 div[is=iiif-manga-viewer] view-s icon-view.hide {
   display: none;

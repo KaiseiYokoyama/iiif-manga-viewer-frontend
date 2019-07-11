@@ -40,11 +40,17 @@ div[is="iiif-manga-viewer"] {
 
       cursor: pointer;
 
+      order: 1;
+
       &.hide {
         display: none;
       }
 
       li.image-list-item {
+        &:hover {
+          background-color: rgba(0,0,0,0.2);
+        }
+
         i.status-icon:after {
           font-family: 'Material Icons';
           content: 'image';
@@ -69,6 +75,8 @@ div[is="iiif-manga-viewer"] {
       //height: 100%;
 
       overflow-y: scroll;
+
+      order: 0;
 
       &.hide {
         display: none;
