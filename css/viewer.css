@@ -13,28 +13,47 @@ div[is=iiif-manga-viewer] canvas {
   height: 100%;
   object-fit: contain;
 }
-div[is=iiif-manga-viewer] ul.image-list {
+div[is=iiif-manga-viewer] view-s {
   height: 100%;
-  width: 20%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  background-color: white;
+}
+div[is=iiif-manga-viewer] view-s ul.image-list {
   overflow-y: scroll;
   margin: 0;
   cursor: pointer;
-  position: absolute;
-  top: 0;
-  left: 0;
 }
-div[is=iiif-manga-viewer] ul.image-list.hide {
+div[is=iiif-manga-viewer] view-s ul.image-list.hide {
   display: none;
 }
-div[is=iiif-manga-viewer] ul.image-list li.image-list-item i.status-icon:after {
+div[is=iiif-manga-viewer] view-s ul.image-list li.image-list-item i.status-icon:after {
   font-family: "Material Icons";
   content: "image";
   color: #26a69a;
 }
-div[is=iiif-manga-viewer] ul.image-list li.image-list-item[loading] i.status-icon:after {
+div[is=iiif-manga-viewer] view-s ul.image-list li.image-list-item[loading] i.status-icon:after {
   font-family: "Material Icons";
   content: "compare";
   color: #bdbdbd;
+}
+div[is=iiif-manga-viewer] view-s icon-view {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  overflow-y: scroll;
+}
+div[is=iiif-manga-viewer] view-s icon-view.hide {
+  display: none;
+}
+div[is=iiif-manga-viewer] view-s icon-view icon-view-item {
+  flex: 1 1;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  margin: 20px;
 }
 
 /*# sourceMappingURL=viewer.css.map */
