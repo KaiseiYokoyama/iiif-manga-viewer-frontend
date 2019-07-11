@@ -107,7 +107,6 @@ class IconView extends HTMLElement {
      * @param newChild {ListViewItem} リストの子要素
      */
     appendChild(newChild) {
-        console.log(newChild);
         if (newChild instanceof IconViewItem) {
             super.appendChild(newChild);
         }
