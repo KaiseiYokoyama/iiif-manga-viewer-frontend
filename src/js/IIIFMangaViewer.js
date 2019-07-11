@@ -349,6 +349,7 @@ class IIIFMangaViewer extends HTMLDivElement {
 
         // viewsを設定
         const views = document.createElement('view-s');
+        this.views = views;
         this.appendChild(views);
 
         // ListViewを設定
