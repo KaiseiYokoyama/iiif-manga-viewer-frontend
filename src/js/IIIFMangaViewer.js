@@ -1,9 +1,134 @@
 import init, {Viewer, Direction} from '../../pkg/iiif_manga_viewer_frontend.js';
 
 /**
- * ビューアのImageListのli要素
+ * ビューアのIconViewのicon要素
  */
-class ImageListItem extends HTMLLIElement {
+class IconViewItem extends HTMLElement {
+    constructor() {
+        super();
+
+        this.addEventListener('click', () => {
+            const src = this.getAttribute('src');
+            // 表示
+            this.mangaViewer.show(this.mangaViewer.viewer.get_index_by_src(src));
+            // メニュー非表示
+            this.iconView.onOff();
+        });
+    }
+
+    /**
+     * 要素が DOM に挿入されるたびに呼び出されます。
+     * リソースの取得やレンダリングなどの、セットアップ コードの実行に役立ちます。
+     * 一般に、この時点まで作業を遅らせるようにする必要があります。
+     * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
+     */
+    connectedCallback() {
+        // initialize
+        // this.classList.add();
+
+        // label
+        const label = document.createElement('label');
+        label.innerText = this.getAttribute('label');
+        this.appendChild(label);
+        this.label = label;
+
+        // 自分の所属するマンガビューアを登録しておく
+        let mangaViewer = this;
+        while (!(mangaViewer instanceof IIIFMangaViewer)) {
+            mangaViewer = mangaViewer.parentElement;
+            if (!mangaViewer) return;
+        }
+        this.mangaViewer = mangaViewer;
+
+        // 親要素を登録しておく
+        let iconView = this;
+        while (!(iconView instanceof IconView)) {
+            iconView = iconView.parentElement;
+            if (!iconView) return;
+        }
+        this.iconView = iconView;
+    }
+
+    static get observedAttributes() {
+        return ['label', 'src'];
+    }
+
+    /**
+     * 要素が DOM に挿入されるたびに呼び出されます。
+     * リソースの取得やレンダリングなどの、セットアップ コードの実行に役立ちます。
+     * 一般に、この時点まで作業を遅らせるようにする必要があります。
+     * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
+     */
+    attributeChangedCallback(attributeName, oldValue, newValue, namespace) {
+        if (attributeName === 'label' && this.label) {
+            this.label.innerText = newValue;
+        }
+    }
+
+    appendChild(newChild) {
+        if (newChild instanceof HTMLLabelElement) {
+            if (this.label) {
+                this.label.remove();
+            }
+            this.label = newChild;
+            super.appendChild(newChild);
+        } else if (newChild instanceof HTMLImageElement) {
+            if (this.image) {
+                this.image.remove();
+            }
+            this.image = newChild;
+            super.appendChild(newChild);
+        }
+    }
+}
+
+customElements.define('icon-view-item', IconViewItem);
+
+/**
+ * IconView
+ */
+class IconView extends HTMLElement {
+    constructor() {
+        super();
+    }
+
+    onOff() {
+        this.classList.toggle('hide');
+    }
+
+    /**
+     * 要素が DOM に挿入されるたびに呼び出されます。
+     * リソースの取得やレンダリングなどの、セットアップ コードの実行に役立ちます。
+     * 一般に、この時点まで作業を遅らせるようにする必要があります。
+     * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
+     */
+    connectedCallback() {
+        // 自分の所属するマンガビューアを登録しておく
+        let mangaViewer = this;
+        while (!(mangaViewer instanceof IIIFMangaViewer)) {
+            mangaViewer = mangaViewer.parentElement;
+            if (!mangaViewer) return;
+        }
+        this.mangaViewer = mangaViewer;
+    }
+
+    /**
+     * 子要素を追加する。IconViewItem以外は無視。
+     * @param newChild {ListViewItem} リストの子要素
+     */
+    appendChild(newChild) {
+        if (newChild instanceof IconViewItem) {
+            super.appendChild(newChild);
+        }
+    }
+}
+
+customElements.define('icon-view', IconView);
+
+/**
+ * ビューアのListViewのli要素
+ */
+class ListViewItem extends HTMLLIElement {
     constructor() {
         super();
 
@@ -46,12 +171,12 @@ class ImageListItem extends HTMLLIElement {
         this.mangaViewer = mangaViewer;
 
         // 親要素を登録しておく
-        let imageList = this;
-        while (!(imageList instanceof ImageList)) {
-            imageList = imageList.parentElement;
-            if (!imageList) return;
+        let listView = this;
+        while (!(listView instanceof ListView)) {
+            listView = listView.parentElement;
+            if (!listView) return;
         }
-        this.imageList = imageList;
+        this.imageList = listView;
 
         // preloaderを表示
         // statusを表示するiconをセット cssで制御
@@ -61,12 +186,12 @@ class ImageListItem extends HTMLLIElement {
     }
 }
 
-customElements.define("image-list-item", ImageListItem, {extends: "li"});
+customElements.define("image-list-item", ListViewItem, {extends: "li"});
 
 /**
- * ビューアのImageList
+ * ビューアのListView
  */
-class ImageList extends HTMLUListElement {
+class ListView extends HTMLUListElement {
     constructor() {
         super();
 
@@ -116,10 +241,10 @@ class ImageList extends HTMLUListElement {
 
     /**
      * 子要素を追加する。ImageListItem以外は無視。
-     * @param newChild {ImageListItem} リストの子要素
+     * @param newChild {ListViewItem} リストの子要素
      */
     appendChild(newChild) {
-        if (newChild instanceof ImageListItem) {
+        if (newChild instanceof ListViewItem) {
             super.appendChild(newChild);
 
             // loading状態に設定
@@ -132,7 +257,39 @@ class ImageList extends HTMLUListElement {
     }
 }
 
-customElements.define("image-list", ImageList, {extends: "ul"});
+customElements.define("image-list", ListView, {extends: "ul"});
+
+/**
+ * Viewをまとめて配置するelement
+ */
+class Views extends HTMLElement {
+    constructor() {
+        super();
+        // this.classList.add('views');
+    }
+
+    /**
+     * 要素が DOM に挿入されるたびに呼び出されます。
+     * リソースの取得やレンダリングなどの、セットアップ コードの実行に役立ちます。
+     * 一般に、この時点まで作業を遅らせるようにする必要があります。
+     * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
+     */
+    connectedCallback() {
+        this.classList.add('views');
+    }
+
+    /**
+     * 子要素を追加する。View以外は無視。
+     * @param newChild {ListView,IconView} 子要素
+     */
+    appendChild(newChild) {
+        if (newChild instanceof ListView || newChild instanceof IconView) {
+            super.appendChild(newChild);
+        }
+    }
+}
+
+customElements.define("view-s", Views);
 
 /**
  * ビューア本体
@@ -160,7 +317,7 @@ class IIIFMangaViewer extends HTMLDivElement {
     disconnectedCallback() {
         // メモリ開放
         this.viewer.free();
-        this.imageList = undefined;
+        this.listView = undefined;
     }
 
     static get observedAttributes() {
@@ -185,14 +342,27 @@ class IIIFMangaViewer extends HTMLDivElement {
         // 子要素をすべて削除
         await init();
         this.textContent = null;
+
         // canvasを設定
         const canvas = document.createElement('canvas');
         this.appendChild(canvas);
-        // ImageListを設定
-        const imageList = document.createElement('ul', {is: "image-list"});
-        this.imageList = imageList;
-        this.appendChild(imageList);
-        this.viewer = new Viewer(canvas, imageList);
+
+        // viewsを設定
+        const views = document.createElement('view-s');
+        this.appendChild(views);
+
+        // ListViewを設定
+        const listView = document.createElement('ul', {is: "image-list"});
+        this.listView = listView;
+        views.appendChild(listView);
+
+        // IconViewを設定
+        const iconView = document.createElement('icon-view');
+        this.iconView = iconView;
+        views.appendChild(iconView);
+
+        // viewerを設定
+        this.viewer = new Viewer(canvas, listView, iconView);
         {
             canvas.onmousedown = (event) => {
                 this.viewer.mousedown(event);
@@ -253,10 +423,26 @@ class IIIFMangaViewer extends HTMLDivElement {
                                     {
                                         const i = document.createElement('i');
                                         i.classList.add("material-icons");
-                                        i.innerHTML = 'list';
+                                        i.innerHTML = 'view_list';
                                         subFAB.appendChild(i);
                                     }
-                                    subFAB.onclick = () => this.imageList.onOff();
+                                    subFAB.onclick = () => this.listView.onOff();
+                                    li.appendChild(subFAB);
+                                }
+                                subFABS.appendChild(li);
+                            }
+                            {
+                                const li = document.createElement('li');
+                                {
+                                    const subFAB = document.createElement('a');
+                                    subFAB.classList.add("btn-floating");
+                                    {
+                                        const i = document.createElement('i');
+                                        i.classList.add("material-icons");
+                                        i.innerHTML = 'view_module';
+                                        subFAB.appendChild(i);
+                                    }
+                                    subFAB.onclick = () => this.iconView.onOff();
                                     li.appendChild(subFAB);
                                 }
                                 subFABS.appendChild(li);
@@ -275,7 +461,7 @@ class IIIFMangaViewer extends HTMLDivElement {
                             }
                             // loadが完了したらimageListの状態を変える
                             const image = this.viewer.get_image_elem(i);
-                            const item = this.imageList.getChild(i);
+                            const item = this.listView.getChild(i);
                             image.addEventListener('load', () => {
                                 item.loaded();
                             });
@@ -310,7 +496,7 @@ class IIIFMangaViewer extends HTMLDivElement {
                 });
             }
         } else {
-            this.imageList.activate(index);
+            this.listView.activate(index);
         }
     };
 

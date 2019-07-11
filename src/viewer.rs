@@ -1,10 +1,11 @@
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 
-use web_sys::{Element, HtmlImageElement, HtmlCanvasElement, CanvasRenderingContext2d, MouseEvent, Node, ElementCreationOptions};
-
+use web_sys::{Element, HtmlImageElement, HtmlCanvasElement, CanvasRenderingContext2d, MouseEvent, Node};
 use js_sys::Promise;
+
 use crate::iiif_manifest::Manifest;
+use self::view::{View, list_view::ListView, icon_view::IconView};
 
 #[wasm_bindgen]
 extern "C" {
@@ -15,7 +16,8 @@ extern "C" {
 #[wasm_bindgen]
 struct Viewer {
     canvas: Canvas,
-    image_list: ImageList,
+    list_view: ListView,
+    icon_view: IconView,
     images: Vec<ViewerImage>,
     manifest: Option<Manifest>,
     pub index: usize,
@@ -25,9 +27,9 @@ struct Viewer {
 impl Viewer {
     #[wasm_bindgen(constructor)]
     /// Viewerのコンストラクタ
-    pub fn new(canvas: Element, image_list: Element) -> Self {
+    pub fn new(canvas: Element, list_view: Element, icon_view: Element) -> Self {
         std::panic::set_hook(Box::new(console_error_panic_hook::hook));
-        Self { canvas: Canvas::new(canvas), image_list: ImageList::new(image_list), images: Vec::new(), manifest: None, index: 0 }
+        Self { canvas: Canvas::new(canvas), list_view: ListView::new(list_view), icon_view: IconView::new(icon_view), images: Vec::new(), manifest: None, index: 0 }
     }
 
     #[wasm_bindgen]
@@ -44,8 +46,10 @@ impl Viewer {
 
         // push images
         let images = manifest.get_viewer_images();
-        // set image_list
-        self.image_list.initialize(&images);
+        // set list_view
+        self.list_view.initialize(&images);
+        // set icon_view
+        self.icon_view.initialize(&images);
 
         // set images
         self.images = images;
@@ -294,55 +298,104 @@ impl ViewerImage {
     }
 }
 
-struct ImageList {
-    element: Element
-}
+mod view {
+    use web_sys::Element;
+    use crate::viewer::ViewerImage;
 
-impl ImageList {
-    pub fn new(element: Element) -> Self {
-//        &element.class_list().add_1("collection");
-//        &element.set_attribute("is","image-list");
-        Self { element }
+    pub trait View {
+        fn new(element: Element) -> Self;
+        fn initialize(&self, viewer_images: &Vec<ViewerImage>);
     }
 
-    /// manifestから中身をセットする
-    pub fn set_manifest(&self, manifest: &Manifest) {
-        let elems = manifest.to_image_list();
-        for elem in elems {
-            self.element.append_child(&Node::from(elem));
+    pub mod list_view {
+        use web_sys::{Element, ElementCreationOptions, Node};
+
+        use crate::viewer::ViewerImage;
+        use crate::viewer::view::View;
+
+        pub struct ListView {
+            element: Element
+        }
+
+        impl View for ListView {
+            fn new(element: Element) -> Self {
+                Self { element }
+            }
+
+            fn initialize(&self, viewer_images: &Vec<ViewerImage>) {
+                for image in viewer_images {
+                    // srcを取得
+                    let src = &image.src;
+                    // labelを取得
+                    let label = &image.label;
+                    // liをdocumentに追加
+                    let window = web_sys::window().expect("no global `window` exists");
+                    let document = window.document().expect("should have a document on window");
+                    let li = match document.create_element_with_element_creation_options("li", ElementCreationOptions::new().is("image-list-item")) {
+                        Ok(e) => e,
+                        Err(_) => { continue; }
+                    };
+                    // liの詳細設定: srcを設定
+                    li.set_attribute("src", src);
+                    // liの詳細設定: inner_htmlを設定
+                    li.set_inner_html(label);
+                    // set!
+                    self.element.append_child(&Node::from(li));
+                }
+            }
         }
     }
 
-    /// 表示する画像の一覧から中身をセットする
-    pub fn initialize(&self, viewer_images: &Vec<ViewerImage>) {
-        for image in viewer_images {
-            // srcを取得
-            let src = &image.src;
-            // labelを取得
-            let label = &image.label;
-            // liをdocumentに追加
-            let window = web_sys::window().expect("no global `window` exists");
-            let document = window.document().expect("should have a document on window");
-            let li = match document.create_element_with_element_creation_options("li", ElementCreationOptions::new().is("image-list-item")) {
-                Ok(e) => e,
-                Err(_) => { continue; }
-            };
-            // liの詳細設定: srcを設定
-            li.set_attribute("src", src);
-            // liの詳細設定: CustomElementを設定
-//            li.set_attribute("is", "image-list-item");
-            // liの詳細設定: inner_htmlを設定
-            li.set_inner_html(label);
-            // set!
-            self.element.append_child(&Node::from(li));
+    pub mod icon_view {
+        use web_sys::{Element, ElementCreationOptions, Node};
+
+        use crate::viewer::ViewerImage;
+        use crate::viewer::view::View;
+
+        pub struct IconView {
+            element: Element,
+        }
+
+        impl View for IconView {
+            fn new(element: Element) -> Self {
+                Self { element }
+            }
+
+            fn initialize(&self, viewer_images: &Vec<ViewerImage>) {
+                self.element.class_list().add_1("row");
+
+                for image in viewer_images {
+                    // srcを取得
+                    let src = &image.src;
+                    // labelを取得
+                    let label = &image.label;
+                    // thumbnailを取得
+                    match &image.thumbnail {
+                        Some(thumbnail) => {
+                            let thumbnail = thumbnail.clone();
+                            let window = web_sys::window().expect("no global `window` exists");
+                            let document = window.document().expect("should have a document on window");
+                            let icon_view_item = match document.create_element("icon-view-item") {
+                                Ok(e) => e,
+                                Err(_) => continue,
+                            };
+                            // itemの詳細設定: srcを設定
+                            icon_view_item.set_attribute("src", src);
+                            // itemの詳細設定: labelを設定
+                            icon_view_item.set_attribute("label", label);
+                            // set! thumbnail
+                            icon_view_item.append_child(&Node::from(thumbnail));
+                            // set!
+                            self.element.append_child(&Node::from(icon_view_item));
+                        }
+                        None => continue,
+                    }
+                }
+            }
         }
     }
 }
 
-struct ImageListItem {
-    src: String,
-    name: String,
-}
 
 #[derive(Deserialize, Debug, Serialize, Default)]
 struct ImageSrcs {
