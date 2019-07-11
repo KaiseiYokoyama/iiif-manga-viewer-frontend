@@ -414,10 +414,26 @@ class IIIFMangaViewer extends HTMLDivElement {
                                     {
                                         const i = document.createElement('i');
                                         i.classList.add("material-icons");
-                                        i.innerHTML = 'list';
+                                        i.innerHTML = 'view_list';
                                         subFAB.appendChild(i);
                                     }
                                     subFAB.onclick = () => this.listView.onOff();
+                                    li.appendChild(subFAB);
+                                }
+                                subFABS.appendChild(li);
+                            }
+                            {
+                                const li = document.createElement('li');
+                                {
+                                    const subFAB = document.createElement('a');
+                                    subFAB.classList.add("btn-floating");
+                                    {
+                                        const i = document.createElement('i');
+                                        i.classList.add("material-icons");
+                                        i.innerHTML = 'view_module';
+                                        subFAB.appendChild(i);
+                                    }
+                                    subFAB.onclick = () => this.iconView.onOff();
                                     li.appendChild(subFAB);
                                 }
                                 subFABS.appendChild(li);
