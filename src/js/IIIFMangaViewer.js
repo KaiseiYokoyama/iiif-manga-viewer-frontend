@@ -11,6 +11,8 @@ class IconViewItem extends HTMLElement {
             const src = this.getAttribute('src');
             // 表示
             this.mangaViewer.show(this.mangaViewer.viewer.get_index_by_src(src));
+            // メニュー非表示
+            this.iconView.onOff();
         });
     }
 
@@ -37,6 +39,14 @@ class IconViewItem extends HTMLElement {
             if (!mangaViewer) return;
         }
         this.mangaViewer = mangaViewer;
+
+        // 親要素を登録しておく
+        let iconView = this;
+        while (!(iconView instanceof IconView)) {
+            iconView = iconView.parentElement;
+            if (!iconView) return;
+        }
+        this.iconView = iconView;
     }
 
     static get observedAttributes() {
