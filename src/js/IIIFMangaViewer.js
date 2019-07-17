@@ -802,7 +802,7 @@ async function run() {
         progress() {
             let div = document.createElement('div');
             div.innerHTML =
-                "<div class=\"progress\" style='position: fixed;top: 50%;left: 50%; width: 50%;transform: translate(-50%, -50%);'>\n" +
+                "<div class=\"progress\" style='position: absolute;top: 50%;left: 50%; width: 50%;transform: translate(-50%, -50%);'>\n" +
                 "    <div class='indeterminate'></div>" +
                 "</div>";
             div = div.firstElementChild;
