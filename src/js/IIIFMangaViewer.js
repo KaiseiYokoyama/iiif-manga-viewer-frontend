@@ -264,6 +264,181 @@ async function run() {
     customElements.define("image-list", ListView, {extends: "ul"});
 
     /**
+     *
+     */
+    class SearchBar extends HTMLElement {
+        constructor() {
+            super();
+        }
+
+        /**
+         * 要素が DOM に挿入されるたびに呼び出されます。
+         * リソースの取得やレンダリングなどの、セットアップ コードの実行に役立ちます。
+         * 一般に、この時点まで作業を遅らせるようにする必要があります。
+         * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
+         */
+        connectedCallback() {
+            // this.classList.add('card');
+            // this.content = document.createElement('div');
+            // this.content.classList.add('card-content');
+            // this.superAppendChild(this.content);
+            let themeSelect, sortSelect, sortOrderDesc, sortOrderAsc, rowsInput;
+
+            // 検索バーの設置
+            const div = document.createElement('div');
+            div.innerHTML =
+                '<div class="input-field search_field">\n' +
+                '   <i class="material-icons prefix">search</i>\n' +
+                '   <input id="icon_query" type="text" class="validate">\n' +
+                '   <label for="icon_query">Search with...</label>\n' +
+                '</div>';
+            const search_field = div.firstElementChild;
+            search_field.onkeypress = (event) => {
+                switch (event.key) {
+                    case 'Enter':
+                        const query = search_field.querySelector('#icon_query').value;
+                        const searchQuery = new SearchQuery(query);
+
+                        // テーマ
+                        if (themeSelect.value) {
+                            searchQuery.set_theme(themeSelect.value);
+                        }
+                        // ソート
+                        if (sortSelect.value) {
+                            // order
+                            let order;
+                            if (sortOrderDesc) {
+                                order = 'desc';
+                            } else {
+                                order = 'asc';
+                            }
+                            searchQuery.set_sort(sortSelect.value + '+' + order);
+                        }
+                        // 件数
+                        if (rowsInput.value) {
+                            let rows = Number(rowsInput.value);
+                            if (rows < 0) rows = 10;
+                            searchQuery.set_rows(rows);
+                        }
+                        // todo post query
+                        let json = searchQuery.json();
+                        console.log(json);
+                        break;
+                }
+            };
+            this.appendChild(search_field);
+
+            // ドロップダウンボタン
+            let dropdownSwitch = document.createElement('div');
+            dropdownSwitch.innerHTML =
+                '<div class="switch">\n' +
+                '    show details' +
+                '    <label>\n' +
+                '      <input type="checkbox">\n' +
+                '      <span class="lever"></span>\n' +
+                '    </label>\n' +
+                '</div>';
+            dropdownSwitch.classList.add('right-align');
+            this.appendChild(dropdownSwitch);
+
+            // ドロップダウン
+            const dropdown = document.createElement('div');
+            dropdown.classList.add('dropdown', 'hide');
+            this.appendChild(dropdown);
+            {
+                let theme = document.createElement('div');
+                theme.innerHTML =
+                    '<div class="input-field">\n' +
+                    '   <i class="material-icons prefix">label</i>\n' +
+                    '   <select>\n' +
+                    '      <option value="" disabled selected>None</option>\n' +
+                    '      <option value="archaelogy">archaelogy</option>\n' +
+                    '      <option value="art">art</option>\n' +
+                    '      <option value="fashion">fashion</option>\n' +
+                    '      <option value="manuscript">manuscript</option>\n' +
+                    '      <option value="map">map</option>\n' +
+                    '      <option value="migration">migration</option>\n' +
+                    '      <option value="music">music</option>\n' +
+                    '      <option value="nature">nature</option>\n' +
+                    '      <option value="newspaper">newspaper</option>\n' +
+                    '      <option value="photography">photography</option>\n' +
+                    '      <option value="ww1">ww1</option>\n' +
+                    '    </select>\n' +
+                    '    <label>Theme</label>' +
+                    '</div>';
+                theme = theme.firstElementChild;
+                dropdown.appendChild(theme);
+                themeSelect = theme.querySelector('select');
+                M.FormSelect.init(themeSelect, {});
+            }
+            {
+                let sort = document.createElement('div');
+                sort.innerHTML =
+                    '<div class="input-field">\n' +
+                    '   <i class="material-icons prefix">sort</i>\n' +
+                    '   <select>\n' +
+                    '      <option value="" disabled selected>None</option>\n' +
+                    '      <option value="timestamp_created">timestamp_created</option>\n' +
+                    '      <option value="timestamp_update">timestamp_update</option>\n' +
+                    '      <option value="europeana_id">europeana_id</option>\n' +
+                    '      <option value="COMPLETENESS">COMPLETENESS</option>\n' +
+                    '      <option value="is_fulltext">is_fulltext</option>\n' +
+                    '      <option value="has_thumbnails">has_thumbnails</option>\n' +
+                    '      <option value="has_media">has_media</option>\n' +
+                    '    </select>\n' +
+                    '    <label>Sort</label>' +
+                    '</div>';
+                sort = sort.firstElementChild;
+                dropdown.appendChild(sort);
+                sortSelect = sort.querySelector('select');
+                M.FormSelect.init(sortSelect, {});
+            }
+            {
+                let sortOrder = document.createElement('div');
+                sortOrder.classList.add('right-align');
+                sortOrder.innerHTML =
+                    '<div class="right-align">' +
+                    '<form action="#">\n' +
+                    '   <label>\n' +
+                    '       <input name="sort_order" type="radio" checked />\n' +
+                    '       <span>ascending</span>\n' +
+                    '   </label>\n' +
+                    '   <label>\n' +
+                    '       <input name="sort_order" type="radio" />\n' +
+                    '       <span>descending</span>\n' +
+                    '   </label>\n' +
+                    '</form>' +
+                    '</div>';
+                sortOrder = sortOrder.firstElementChild;
+                dropdown.appendChild(sortOrder);
+                // sortSelect = sort.querySelectorAll('select');
+                sortOrderAsc = sortOrder.querySelectorAll('input[type="radio"]')[0];
+                sortOrderDesc = sortOrder.querySelectorAll('input[type="radio"]')[1];
+            }
+            {
+                let rows = document.createElement('div');
+                rows.innerHTML =
+                    '<div class="input-field search_field">\n' +
+                    '   <i class="material-icons prefix">data_usage</i>\n' +
+                    '   <input id="icon_rows" type="number" class="validate">\n' +
+                    '   <label for="icon_rows">rows</label>\n' +
+                    '</div>';
+                rows = rows.firstElementChild;
+                dropdown.appendChild(rows);
+                rowsInput = rows.querySelector('input');
+            }
+
+            // dropdown onclick
+            dropdownSwitch.querySelector('input[type="checkbox"]').onclick = () => {
+                dropdown.classList.toggle('hide');
+            };
+
+        }
+    }
+
+    customElements.define('search-bar', SearchBar);
+
+    /**
      * ビューアのSearchView
      * Manifestの検索
      */
@@ -286,26 +461,8 @@ async function run() {
             this.classList.add('hide');
 
             // 検索バーの設置
-            const div = document.createElement('div');
-            div.innerHTML =
-                '<div class="input-field search_field">\n' +
-                '   <i class="material-icons prefix">search</i>\n' +
-                '   <input id="icon_query" type="text" class="validate">\n' +
-                '   <label for="icon_query">Search with...</label>\n' +
-                '</div>';
-            const search_field = div.firstElementChild;
-            search_field.onkeypress = (event) => {
-                switch (event.key) {
-                    case 'Enter':
-                        const query = search_field.querySelector('#icon_query').value;
-                        console.log('query:' + query);
-                        const searchQuery = JSON.stringify(new SearchQuery(query));
-                        // todo post query
-                        console.log(searchQuery);
-                        break;
-                }
-            };
-            this.appendChild(search_field);
+            const search_bar = document.createElement('search-bar');
+            this.appendChild(search_bar);
         }
     }
 

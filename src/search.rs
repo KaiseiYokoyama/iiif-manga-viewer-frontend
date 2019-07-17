@@ -59,6 +59,7 @@ impl SearchQuery {
         let rows = if rows > u8::max_value() as u32 {
             u8::max_value()
         } else { rows as u8 };
+        self.rows = rows;
     }
 
     pub fn query(&self) -> String {
@@ -75,6 +76,10 @@ impl SearchQuery {
 
     pub fn rows(&self) -> u8 {
         self.rows.clone()
+    }
+
+    pub fn json(&self) -> String {
+        serde_json::to_string(&self).unwrap_or(String::new())
     }
 }
 
