@@ -16,7 +16,7 @@ pub struct Manifest {
     id: String,
     #[serde(rename = "@type")]
     type_: String,
-    label: String,
+    pub label: String,
     license: Option<String>,
     attribution: Option<String>,
     description: Option<String>,

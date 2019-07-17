@@ -70,7 +70,7 @@ impl Viewer {
                 return false;
             }
             if let Some(img) = &image.image {
-                log(&format!("show: {}", index));
+//                log(&format!("show: {}", index));
                 self.index = index;
                 // prepare to show
                 let width = img.width();
@@ -176,6 +176,14 @@ impl Viewer {
             .unwrap()
             .dyn_into::<web_sys::CanvasRenderingContext2d>()
             .unwrap()
+    }
+
+    #[wasm_bindgen]
+    pub fn label(&self) -> String {
+        match &self.manifest {
+            Some(m) => &m.label,
+            None => "None",
+        }.to_string()
     }
 }
 

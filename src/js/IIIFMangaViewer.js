@@ -296,7 +296,9 @@ customElements.define("view-s", Views);
  */
 class IIIFMangaViewer extends HTMLDivElement {
     constructor() {
+        console.log('constructor');
         super();
+        this.initialize();
     }
 
     /**
@@ -306,7 +308,7 @@ class IIIFMangaViewer extends HTMLDivElement {
      * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
      */
     connectedCallback() {
-        this.initialize();
+        console.log('connectedCallBack');
     }
 
     /**
@@ -315,12 +317,14 @@ class IIIFMangaViewer extends HTMLDivElement {
      * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
      */
     disconnectedCallback() {
+        console.log('disconnectedCallback');
         // メモリ開放
-        this.viewer.free();
-        this.listView = undefined;
+        // this.viewer.free();
+        // this.listView = undefined;
     }
 
     static get observedAttributes() {
+        console.log('observedAttributes');
         return ['manifest'];
     }
 
@@ -334,6 +338,7 @@ class IIIFMangaViewer extends HTMLDivElement {
      * @param newValue
      */
     attributeChangedCallback(name, oldValue, newValue) {
+        console.log('attributeChangedcallback');
         // this.initialize();
     }
 
@@ -364,6 +369,7 @@ class IIIFMangaViewer extends HTMLDivElement {
 
         // viewerを設定
         this.viewer = new Viewer(canvas, listView, iconView);
+        console.log('size:' + this.viewer.size());
         {
             canvas.onmousedown = (event) => {
                 this.viewer.mousedown(event);
@@ -390,6 +396,88 @@ class IIIFMangaViewer extends HTMLDivElement {
         const manifestURL = this.getAttribute('manifest');
         if (manifestURL) {
             {
+                fetch(manifestURL).then((response) => {
+                    return response.text();
+                }).then((text) => {
+                    if (!this.viewer.set_manifest(text)) {
+                        // manifestの読み取りに失敗すると消える
+                        this.remove();
+                    }
+
+                    console.log("initialize(): " + this.viewer.label());
+
+                    this.show(0);
+
+                    // FAB(Floating Action Button)追加
+                    const fabs = document.createElement('div');
+                    fabs.classList.add('fixed-action-btn');
+                    {
+                        const mainFAB = document.createElement('a');
+                        mainFAB.classList.add("btn-floating", "btn-large");
+                        {
+                            const i = document.createElement('i');
+                            i.classList.add("large", "material-icons");
+                            i.innerHTML = 'menu';
+                            mainFAB.appendChild(i);
+                        }
+                        fabs.appendChild(mainFAB);
+
+                        const subFABS = document.createElement('ul');
+                        {
+                            {
+                                const li = document.createElement('li');
+                                {
+                                    const subFAB = document.createElement('a');
+                                    subFAB.classList.add("btn-floating");
+                                    {
+                                        const i = document.createElement('i');
+                                        i.classList.add("material-icons");
+                                        i.innerHTML = 'view_list';
+                                        subFAB.appendChild(i);
+                                    }
+                                    subFAB.onclick = () => this.listView.onOff();
+                                    li.appendChild(subFAB);
+                                }
+                                subFABS.appendChild(li);
+                            }
+                            {
+                                const li = document.createElement('li');
+                                {
+                                    const subFAB = document.createElement('a');
+                                    subFAB.classList.add("btn-floating");
+                                    {
+                                        const i = document.createElement('i');
+                                        i.classList.add("material-icons");
+                                        i.innerHTML = 'view_module';
+                                        subFAB.appendChild(i);
+                                    }
+                                    subFAB.onclick = () => this.iconView.onOff();
+                                    li.appendChild(subFAB);
+                                }
+                                subFABS.appendChild(li);
+                            }
+                        }
+                        fabs.appendChild(subFABS);
+                    }
+                    this.appendChild(fabs);
+                    M.FloatingActionButton.init(fabs, {hoverEnabled: false});
+
+                    // 裏でloadを実行
+                    let load = () => {
+                        for (let i = 0; i < this.viewer.size(); i++) {
+                            if (!this.viewer.is_loading(i)) {
+                                this.viewer.load(i);
+                            }
+                            // loadが完了したらimageListの状態を変える
+                            const image = this.viewer.get_image_elem(i);
+                            const item = this.listView.getChild(i);
+                            image.addEventListener('load', () => {
+                                item.loaded();
+                            });
+                        }
+                    };
+                    new Thread(load()).execute();
+                });
                 const xhr = new XMLHttpRequest();
                 xhr.open('GET', manifestURL);
                 xhr.onload = () => {
@@ -398,6 +486,9 @@ class IIIFMangaViewer extends HTMLDivElement {
                         // manifestの読み取りに失敗すると消える
                         this.remove();
                     }
+
+                    console.log("initialize(): " + this.viewer.label());
+
                     this.show(0);
 
                     // FAB(Floating Action Button)追加
@@ -470,7 +561,7 @@ class IIIFMangaViewer extends HTMLDivElement {
                     };
                     new Thread(load()).execute();
                 };
-                xhr.send();
+                // xhr.send();
             }
         }
     }
@@ -487,9 +578,13 @@ class IIIFMangaViewer extends HTMLDivElement {
     }
 
     show(index) {
+        let label = this.viewer.label();
+        console.log('JS: show():' + label);
+        // this.viewer.label();
         if (!this.viewer.show(index)) {
             let progress = this.progress();
             let elem = this.viewer.get_image_elem(index);
+            console.log('REQUEST: this.viewer.label=' + this.viewer.label());
             if (elem) {
                 elem.addEventListener('load', () => {
                     this.removeChild(progress);
