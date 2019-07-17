@@ -112,6 +112,19 @@ div[is="iiif-manga-viewer"] {
         > .dropdown {
           padding-left: 20%;
           flex-basis: 100%;
+
+          > .rows-wrapper.input-field {
+            display: flex;
+
+            > i {
+              flex: 0 0;
+            }
+
+            > form {
+              margin-left: 3rem;
+              flex: 1 1;
+            }
+          }
         }
       }
 

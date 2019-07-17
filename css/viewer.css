@@ -84,6 +84,16 @@ div[is=iiif-manga-viewer] view-s search-view search-bar > .dropdown {
   padding-left: 20%;
   flex-basis: 100%;
 }
+div[is=iiif-manga-viewer] view-s search-view search-bar > .dropdown > .rows-wrapper.input-field {
+  display: flex;
+}
+div[is=iiif-manga-viewer] view-s search-view search-bar > .dropdown > .rows-wrapper.input-field > i {
+  flex: 0 0;
+}
+div[is=iiif-manga-viewer] view-s search-view search-bar > .dropdown > .rows-wrapper.input-field > form {
+  margin-left: 3rem;
+  flex: 1 1;
+}
 div[is=iiif-manga-viewer] .fixed-action-btn {
   position: absolute;
   right: auto;

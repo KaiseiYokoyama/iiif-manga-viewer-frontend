@@ -417,15 +417,19 @@ async function run() {
             }
             {
                 let rows = document.createElement('div');
+                rows.classList.add('rows-wrapper','input-field');
                 rows.innerHTML =
-                    '<div class="input-field search_field">\n' +
-                    '   <i class="material-icons prefix">data_usage</i>\n' +
-                    '   <input id="icon_rows" type="number" class="validate">\n' +
-                    '   <label for="icon_rows">rows</label>\n' +
-                    '</div>';
-                rows = rows.firstElementChild;
+                    '<i class="material-icons prefix">data_usage</i> ' +
+                    '<form action="#">\n' +
+                    '   <label>rows</label>' +
+                    '   <p class="range-field">\n' +
+                    '       <input type="range" value="10" min="0" max="100" />\n' +
+                    '   </p>\n' +
+                    '</form>';
+                // rows = rows.firstElementChild;
                 dropdown.appendChild(rows);
                 rowsInput = rows.querySelector('input');
+                M.Range.init(rowsInput,{});
             }
 
             // dropdown onclick
