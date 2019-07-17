@@ -103,6 +103,7 @@ class IconView extends HTMLElement {
      * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
      */
     connectedCallback() {
+        this.classList.add('hide');
         // 自分の所属するマンガビューアを登録しておく
         let mangaViewer = this;
         while (!(mangaViewer instanceof IIIFMangaViewer)) {
