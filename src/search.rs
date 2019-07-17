@@ -72,7 +72,7 @@ impl SearchQuery {
     pub fn sort(&self) -> String {
         self.sort.clone()
     }
-    
+
     pub fn rows(&self) -> u8 {
         self.rows.clone()
     }

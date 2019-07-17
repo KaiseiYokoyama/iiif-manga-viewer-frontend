@@ -5,7 +5,7 @@ use web_sys::{Element, HtmlImageElement, HtmlCanvasElement, CanvasRenderingConte
 use js_sys::Promise;
 
 use crate::iiif_manifest::Manifest;
-use crate::view::{View, list_view::ListView, icon_view::IconView};
+use crate::view::{View, list_view::ListView, icon_view::IconView,search_view::SearchView};
 
 #[wasm_bindgen]
 extern "C" {
@@ -18,6 +18,7 @@ struct Viewer {
     canvas: Canvas,
     list_view: ListView,
     icon_view: IconView,
+    search_view: SearchView,
     images: Vec<ViewerImage>,
     manifest: Option<Manifest>,
     pub index: usize,
@@ -27,9 +28,9 @@ struct Viewer {
 impl Viewer {
     #[wasm_bindgen(constructor)]
     /// Viewerのコンストラクタ
-    pub fn new(canvas: Element, list_view: Element, icon_view: Element) -> Self {
+    pub fn new(canvas: Element, list_view: Element, icon_view: Element, search_view: Element) -> Self {
         std::panic::set_hook(Box::new(console_error_panic_hook::hook));
-        Self { canvas: Canvas::new(canvas), list_view: ListView::new(list_view), icon_view: IconView::new(icon_view), images: Vec::new(), manifest: None, index: 0 }
+        Self { canvas: Canvas::new(canvas), list_view: ListView::new(list_view), icon_view: IconView::new(icon_view), search_view: SearchView::new(search_view), images: Vec::new(), manifest: None, index: 0 }
     }
 
     #[wasm_bindgen]

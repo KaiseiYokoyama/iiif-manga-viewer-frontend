@@ -1,3 +1,4 @@
+use wasm_bindgen::prelude::*;
 use web_sys::{Element, ElementCreationOptions, Node};
 
 use crate::viewer::ViewerImage;
@@ -94,7 +95,6 @@ pub mod icon_view {
 
 pub mod search_view {
     use super::*;
-    use crate::search::SearchResult;
 
     /// Manifestの検索結果
     #[wasm_bindgen]
@@ -113,13 +113,13 @@ pub mod search_view {
         }
     }
 
+    #[wasm_bindgen]
     impl SearchView {
-        #[wasm_bindgen]
-        pub fn result(&self, string: String) -> Vec<SearchResult> {
-            return match serde_json::from_str(&string) {
-                Ok(s) => { s }
-                Err(_) => { vec![] }
-            };
+        pub fn results(&self, string: String) {
+            // let results = match serde_json::from_str(&string) {
+            //     Ok(s) => { s }
+            //     Err(_) => { vec![] }
+            // };
         }
     }
 }

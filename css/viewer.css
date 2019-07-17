@@ -60,6 +60,13 @@ div[is=iiif-manga-viewer] view-s icon-view icon-view-item {
   flex-direction: column;
   margin: 20px;
 }
+div[is=iiif-manga-viewer] view-s search-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 600px;
+}
 div[is=iiif-manga-viewer] .fixed-action-btn {
   position: absolute;
   right: auto;
