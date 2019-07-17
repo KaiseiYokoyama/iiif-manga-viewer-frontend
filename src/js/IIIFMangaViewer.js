@@ -587,7 +587,6 @@ async function run() {
 
             // viewerを設定
             this.viewer = new Viewer(canvas, listView, iconView, searchView);
-            console.log('size:' + this.viewer.size());
             {
                 canvas.onmousedown = (event) => {
                     this.viewer.mousedown(event);
