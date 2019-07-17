@@ -89,6 +89,52 @@ div[is="iiif-manga-viewer"] {
 
       }
     }
+
+    search-view {
+      background-color: white;
+
+      search-bar {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: right;
+        //flex-wrap: wrap;
+        width: 80%;
+
+        > * {
+          width: 100%;
+        }
+
+        > .input-field {
+          flex: 1 1;
+        }
+
+        > .dropdown {
+          padding-left: 20%;
+          flex-basis: 100%;
+
+          > .rows-wrapper.input-field {
+            display: flex;
+
+            > i {
+              flex: 0 0;
+            }
+
+            > form {
+              margin-left: 3rem;
+              flex: 1 1;
+            }
+          }
+        }
+      }
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      //justify-content: center;
+
+      min-width: 600px;
+    }
   }
 
   // FAB

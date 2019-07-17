@@ -3,3 +3,5 @@ extern crate serde_derive;
 
 mod viewer;
 mod iiif_manifest;
+mod view;
+mod search;
