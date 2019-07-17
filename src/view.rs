@@ -1,5 +1,7 @@
-use web_sys::Element;
+use web_sys::{Element, ElementCreationOptions, Node};
+
 use crate::viewer::ViewerImage;
+
 
 pub trait View {
     fn new(element: Element) -> Self;
@@ -7,11 +9,9 @@ pub trait View {
 }
 
 pub mod list_view {
-    use web_sys::{Element, ElementCreationOptions, Node};
+    use super::*;
 
-    use crate::viewer::ViewerImage;
-    use crate::view::View;
-
+    /// Manifestに含まれる画像のリスト
     pub struct ListView {
         element: Element
     }
@@ -46,11 +46,9 @@ pub mod list_view {
 }
 
 pub mod icon_view {
-    use web_sys::{Element, ElementCreationOptions, Node};
+    use super::*;
 
-    use crate::viewer::ViewerImage;
-    use crate::view::View;
-
+    /// Manifestに含まれる画像の一覧
     pub struct IconView {
         element: Element,
     }
@@ -90,6 +88,38 @@ pub mod icon_view {
                     None => continue,
                 }
             }
+        }
+    }
+}
+
+pub mod search_view {
+    use super::*;
+    use crate::search::SearchResult;
+
+    /// Manifestの検索結果
+    #[wasm_bindgen]
+    pub struct SearchView {
+        element: Element,
+    }
+
+    impl View for SearchView {
+        fn new(element: Element) -> Self {
+            Self { element }
+        }
+
+        /// 何もしない
+        fn initialize(&self, viewer_images: &Vec<ViewerImage>) {
+//            unimplemented!()
+        }
+    }
+
+    impl SearchView {
+        #[wasm_bindgen]
+        pub fn result(&self, string: String) -> Vec<SearchResult> {
+            return match serde_json::from_str(&string) {
+                Ok(s) => { s }
+                Err(_) => { vec![] }
+            };
         }
     }
 }
