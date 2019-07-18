@@ -1,5 +1,17 @@
 body {
   margin: 0;
+  background-color: #bababa;
+}
+body nav .nav-wrapper {
+  display: flex;
+  justify-content: center;
+}
+body nav .nav-wrapper .title {
+  font-size: 1.3rem;
+}
+body nav .nav-wrapper .nav-menu {
+  position: absolute;
+  right: 0;
 }
 
 div.contents {

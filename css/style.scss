@@ -1,5 +1,24 @@
+@import "../materialize-src/sass/components/color-variables";
+@import "../materialize-src/sass/components/variables";
+
 body {
   margin: 0;
+  background-color: $primary-color-dark;
+
+  nav {
+    .nav-wrapper {
+      display: flex;
+      justify-content: center;
+      .title {
+        font-size: 1.3rem;
+      }
+
+      .nav-menu {
+        position: absolute;
+        right: 0;
+      }
+    }
+  }
 }
 
 div.contents {
