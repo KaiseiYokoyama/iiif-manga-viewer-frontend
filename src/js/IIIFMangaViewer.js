@@ -488,7 +488,7 @@ async function run() {
          * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
          */
         connectedCallback() {
-            this.classList.add('views');
+            this.classList.add('views','z-depth-1');
         }
 
         /**
@@ -556,10 +556,11 @@ async function run() {
         }
 
         initialize() {
-            // initialize
             // 子要素をすべて削除
-            // await init();
             this.textContent = null;
+
+            // card
+            this.classList.add('card');
 
             // canvasを設定
             const canvas = document.createElement('canvas');
