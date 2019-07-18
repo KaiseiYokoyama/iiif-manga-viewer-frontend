@@ -582,12 +582,13 @@ async function run() {
             views.appendChild(iconView);
 
             // searchViewを設定
-            const searchView = document.createElement('search-view');
-            this.searchView = searchView;
-            views.appendChild(searchView);
+            // const searchView = document.createElement('search-view');
+            // this.searchView = searchView;
+            // views.appendChild(searchView);
 
             // viewerを設定
-            this.viewer = new Viewer(canvas, listView, iconView, searchView);
+            // this.viewer = new Viewer(canvas, listView, iconView, searchView);
+            this.viewer = new Viewer(canvas, listView, iconView);
             {
                 canvas.onmousedown = (event) => {
                     this.viewer.mousedown(event);
@@ -674,22 +675,22 @@ async function run() {
                                     }
                                     subFABS.appendChild(li);
                                 }
-                                {
-                                    const li = document.createElement('li');
-                                    {
-                                        const subFAB = document.createElement('a');
-                                        subFAB.classList.add("btn-floating");
-                                        {
-                                            const i = document.createElement('i');
-                                            i.classList.add("material-icons");
-                                            i.innerHTML = 'search';
-                                            subFAB.appendChild(i);
-                                        }
-                                        subFAB.onclick = () => this.searchView.onOff();
-                                        li.appendChild(subFAB);
-                                    }
-                                    subFABS.appendChild(li);
-                                }
+                                // {
+                                //     const li = document.createElement('li');
+                                //     {
+                                //         const subFAB = document.createElement('a');
+                                //         subFAB.classList.add("btn-floating");
+                                //         {
+                                //             const i = document.createElement('i');
+                                //             i.classList.add("material-icons");
+                                //             i.innerHTML = 'search';
+                                //             subFAB.appendChild(i);
+                                //         }
+                                //         subFAB.onclick = () => this.searchView.onOff();
+                                //         li.appendChild(subFAB);
+                                //     }
+                                //     subFABS.appendChild(li);
+                                // }
                             }
                             fabs.appendChild(subFABS);
                         }
