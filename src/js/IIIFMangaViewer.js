@@ -663,12 +663,12 @@ async function run() {
 
             // footer
             const footer = document.createElement('div');
-            footer.classList.add('card-action','hide');
+            footer.classList.add('card-action', 'hide');
             this.footer = footer;
             super.appendChild(footer);
             // search button
             const searchButton = document.createElement('a');
-            searchButton.classList.add('btn','right');
+            searchButton.classList.add('btn', 'right');
             searchButton.innerHTML =
                 '<i class="material-icons left">search</i>Search';
             footer.appendChild(searchButton);
@@ -822,6 +822,7 @@ async function run() {
             let search_field = this.search_field;
 
             const query = search_field.querySelector('#icon_query').value;
+            if (!query) return;
             const searchQuery = new SearchQuery(query);
 
             // テーマ
