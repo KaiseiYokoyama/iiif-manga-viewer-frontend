@@ -264,215 +264,6 @@ async function run() {
     customElements.define("image-list", ListView, {extends: "ul"});
 
     /**
-     *
-     */
-    class SearchBar extends HTMLElement {
-        constructor() {
-            super();
-        }
-
-        /**
-         * 要素が DOM に挿入されるたびに呼び出されます。
-         * リソースの取得やレンダリングなどの、セットアップ コードの実行に役立ちます。
-         * 一般に、この時点まで作業を遅らせるようにする必要があります。
-         * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
-         */
-        connectedCallback() {
-            // this.classList.add('card');
-            // this.content = document.createElement('div');
-            // this.content.classList.add('card-content');
-            // this.superAppendChild(this.content);
-            let themeSelect, sortSelect, sortOrderDesc, sortOrderAsc, rowsInput;
-
-            // 検索バーの設置
-            const div = document.createElement('div');
-            div.innerHTML =
-                '<div class="input-field search_field">\n' +
-                '   <i class="material-icons prefix">search</i>\n' +
-                '   <input id="icon_query" type="text" class="validate">\n' +
-                '   <label for="icon_query">Search with...</label>\n' +
-                '</div>';
-            const search_field = div.firstElementChild;
-            search_field.onkeypress = (event) => {
-                switch (event.key) {
-                    case 'Enter':
-                        const query = search_field.querySelector('#icon_query').value;
-                        const searchQuery = new SearchQuery(query);
-
-                        // テーマ
-                        if (themeSelect.value) {
-                            searchQuery.set_theme(themeSelect.value);
-                        }
-                        // ソート
-                        if (sortSelect.value) {
-                            // order
-                            let order;
-                            if (sortOrderDesc) {
-                                order = 'desc';
-                            } else {
-                                order = 'asc';
-                            }
-                            searchQuery.set_sort(sortSelect.value + '+' + order);
-                        }
-                        // 件数
-                        if (rowsInput.value) {
-                            let rows = Number(rowsInput.value);
-                            if (rows < 0) rows = 10;
-                            searchQuery.set_rows(rows);
-                        }
-                        // todo post query
-                        let json = searchQuery.json();
-                        console.log(json);
-                        break;
-                }
-            };
-            this.appendChild(search_field);
-
-            // ドロップダウンボタン
-            let dropdownSwitch = document.createElement('div');
-            dropdownSwitch.innerHTML =
-                '<div class="switch">\n' +
-                '    show details' +
-                '    <label>\n' +
-                '      <input type="checkbox">\n' +
-                '      <span class="lever"></span>\n' +
-                '    </label>\n' +
-                '</div>';
-            dropdownSwitch.classList.add('right-align');
-            this.appendChild(dropdownSwitch);
-
-            // ドロップダウン
-            const dropdown = document.createElement('div');
-            dropdown.classList.add('dropdown', 'hide');
-            this.appendChild(dropdown);
-            {
-                let theme = document.createElement('div');
-                theme.innerHTML =
-                    '<div class="input-field">\n' +
-                    '   <i class="material-icons prefix">label</i>\n' +
-                    '   <select>\n' +
-                    '      <option value="" disabled selected>None</option>\n' +
-                    '      <option value="archaelogy">archaelogy</option>\n' +
-                    '      <option value="art">art</option>\n' +
-                    '      <option value="fashion">fashion</option>\n' +
-                    '      <option value="manuscript">manuscript</option>\n' +
-                    '      <option value="map">map</option>\n' +
-                    '      <option value="migration">migration</option>\n' +
-                    '      <option value="music">music</option>\n' +
-                    '      <option value="nature">nature</option>\n' +
-                    '      <option value="newspaper">newspaper</option>\n' +
-                    '      <option value="photography">photography</option>\n' +
-                    '      <option value="ww1">ww1</option>\n' +
-                    '    </select>\n' +
-                    '    <label>Theme</label>' +
-                    '</div>';
-                theme = theme.firstElementChild;
-                dropdown.appendChild(theme);
-                themeSelect = theme.querySelector('select');
-                M.FormSelect.init(themeSelect, {});
-            }
-            {
-                let sort = document.createElement('div');
-                sort.innerHTML =
-                    '<div class="input-field">\n' +
-                    '   <i class="material-icons prefix">sort</i>\n' +
-                    '   <select>\n' +
-                    '      <option value="" disabled selected>None</option>\n' +
-                    '      <option value="timestamp_created">timestamp_created</option>\n' +
-                    '      <option value="timestamp_update">timestamp_update</option>\n' +
-                    '      <option value="europeana_id">europeana_id</option>\n' +
-                    '      <option value="COMPLETENESS">COMPLETENESS</option>\n' +
-                    '      <option value="is_fulltext">is_fulltext</option>\n' +
-                    '      <option value="has_thumbnails">has_thumbnails</option>\n' +
-                    '      <option value="has_media">has_media</option>\n' +
-                    '    </select>\n' +
-                    '    <label>Sort</label>' +
-                    '</div>';
-                sort = sort.firstElementChild;
-                dropdown.appendChild(sort);
-                sortSelect = sort.querySelector('select');
-                M.FormSelect.init(sortSelect, {});
-            }
-            {
-                let sortOrder = document.createElement('div');
-                sortOrder.classList.add('right-align');
-                sortOrder.innerHTML =
-                    '<div class="right-align">' +
-                    '<form action="#">\n' +
-                    '   <label>\n' +
-                    '       <input name="sort_order" type="radio" checked />\n' +
-                    '       <span>ascending</span>\n' +
-                    '   </label>\n' +
-                    '   <label>\n' +
-                    '       <input name="sort_order" type="radio" />\n' +
-                    '       <span>descending</span>\n' +
-                    '   </label>\n' +
-                    '</form>' +
-                    '</div>';
-                sortOrder = sortOrder.firstElementChild;
-                dropdown.appendChild(sortOrder);
-                // sortSelect = sort.querySelectorAll('select');
-                sortOrderAsc = sortOrder.querySelectorAll('input[type="radio"]')[0];
-                sortOrderDesc = sortOrder.querySelectorAll('input[type="radio"]')[1];
-            }
-            {
-                let rows = document.createElement('div');
-                rows.classList.add('rows-wrapper','input-field');
-                rows.innerHTML =
-                    '<i class="material-icons prefix">data_usage</i> ' +
-                    '<form action="#">\n' +
-                    '   <label>rows</label>' +
-                    '   <p class="range-field">\n' +
-                    '       <input type="range" value="10" min="0" max="100" />\n' +
-                    '   </p>\n' +
-                    '</form>';
-                // rows = rows.firstElementChild;
-                dropdown.appendChild(rows);
-                rowsInput = rows.querySelector('input');
-                M.Range.init(rowsInput,{});
-            }
-
-            // dropdown onclick
-            dropdownSwitch.querySelector('input[type="checkbox"]').onclick = () => {
-                dropdown.classList.toggle('hide');
-            };
-
-        }
-    }
-
-    customElements.define('search-bar', SearchBar);
-
-    /**
-     * ビューアのSearchView
-     * Manifestの検索
-     */
-    class SearchView extends HTMLElement {
-        constructor() {
-            super();
-        }
-
-        onOff() {
-            this.classList.toggle('hide');
-        }
-
-        /**
-         * 要素が DOM に挿入されるたびに呼び出されます。
-         * リソースの取得やレンダリングなどの、セットアップ コードの実行に役立ちます。
-         * 一般に、この時点まで作業を遅らせるようにする必要があります。
-         * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
-         */
-        connectedCallback() {
-            this.classList.add('hide');
-
-            // 検索バーの設置
-            const search_bar = document.createElement('search-bar');
-            this.appendChild(search_bar);
-        }
-    }
-
-    customElements.define("search-view", SearchView);
-
-    /**
      * Viewをまとめて配置するelement
      */
     class Views extends HTMLElement {
@@ -488,7 +279,7 @@ async function run() {
          * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
          */
         connectedCallback() {
-            this.classList.add('views','z-depth-1');
+            this.classList.add('views', 'z-depth-1');
         }
 
         /**
@@ -496,7 +287,7 @@ async function run() {
          * @param newChild {ListView,IconView} 子要素
          */
         appendChild(newChild) {
-            if (newChild instanceof ListView || newChild instanceof IconView || newChild instanceof SearchView) {
+            if (newChild instanceof ListView || newChild instanceof IconView || newChild instanceof SearchModal) {
                 super.appendChild(newChild);
             }
         }
@@ -844,6 +635,269 @@ async function run() {
 
     customElements.define("iiif-manga-viewer", IIIFMangaViewer, {extends: "div"});
 
+    /**
+     * 検索バー
+     */
+    class SearchBar extends HTMLElement {
+        constructor() {
+            super();
+        }
+
+        /**
+         * 要素が DOM に挿入されるたびに呼び出されます。
+         * リソースの取得やレンダリングなどの、セットアップ コードの実行に役立ちます。
+         * 一般に、この時点まで作業を遅らせるようにする必要があります。
+         * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
+         */
+        connectedCallback() {
+            let themeSelect, sortSelect, sortOrderDesc, sortOrderAsc, rowsInput;
+
+            // card
+            this.classList.add('card');
+
+            // content
+            const content = document.createElement('div');
+            content.classList.add('card-content');
+            this.content = content;
+            super.appendChild(content);
+
+            // footer
+            const footer = document.createElement('div');
+            footer.classList.add('card-action','hide');
+            this.footer = footer;
+            super.appendChild(footer);
+            // search button
+            const searchButton = document.createElement('a');
+            searchButton.classList.add('btn','right');
+            searchButton.innerHTML =
+                '<i class="material-icons left">search</i>Search';
+            footer.appendChild(searchButton);
+            searchButton.onclick = () => {
+                this.search();
+            };
+
+
+            // 検索バーの設置
+            const div = document.createElement('div');
+            div.innerHTML =
+                '<div class="input-field search_field">\n' +
+                '   <i class="material-icons prefix">search</i>\n' +
+                '   <input id="icon_query" type="text" class="validate">\n' +
+                '   <label for="icon_query">Search with...</label>\n' +
+                '</div>';
+            const search_field = div.firstElementChild;
+            this.search_field = search_field;
+
+            search_field.onkeypress = (event) => {
+                switch (event.key) {
+                    case 'Enter':
+                        this.search();
+                        break;
+                }
+            };
+            this.appendChild(search_field);
+
+            // ドロップダウンボタン
+            let dropdownSwitch = document.createElement('div');
+            dropdownSwitch.innerHTML =
+                '<div class="switch">\n' +
+                '    show details' +
+                '    <label>\n' +
+                '      <input type="checkbox">\n' +
+                '      <span class="lever"></span>\n' +
+                '    </label>\n' +
+                '</div>';
+            dropdownSwitch.classList.add('right-align');
+            this.appendChild(dropdownSwitch);
+
+            // ドロップダウン
+            const dropdown = document.createElement('div');
+            dropdown.classList.add('dropdown', 'hide');
+            this.appendChild(dropdown);
+            {
+                let theme = document.createElement('div');
+                theme.innerHTML =
+                    '<div class="input-field">\n' +
+                    '   <i class="material-icons prefix">label</i>\n' +
+                    '   <select>\n' +
+                    '      <option value="" disabled selected>None</option>\n' +
+                    '      <option value="archaelogy">archaelogy</option>\n' +
+                    '      <option value="art">art</option>\n' +
+                    '      <option value="fashion">fashion</option>\n' +
+                    '      <option value="manuscript">manuscript</option>\n' +
+                    '      <option value="map">map</option>\n' +
+                    '      <option value="migration">migration</option>\n' +
+                    '      <option value="music">music</option>\n' +
+                    '      <option value="nature">nature</option>\n' +
+                    '      <option value="newspaper">newspaper</option>\n' +
+                    '      <option value="photography">photography</option>\n' +
+                    '      <option value="ww1">ww1</option>\n' +
+                    '    </select>\n' +
+                    '    <label>Theme</label>' +
+                    '</div>';
+                theme = theme.firstElementChild;
+                dropdown.appendChild(theme);
+                themeSelect = theme.querySelector('select');
+                M.FormSelect.init(themeSelect, {});
+            }
+            {
+                let sort = document.createElement('div');
+                sort.innerHTML =
+                    '<div class="input-field">\n' +
+                    '   <i class="material-icons prefix">sort</i>\n' +
+                    '   <select>\n' +
+                    '      <option value="" disabled selected>None</option>\n' +
+                    '      <option value="timestamp_created">timestamp_created</option>\n' +
+                    '      <option value="timestamp_update">timestamp_update</option>\n' +
+                    '      <option value="europeana_id">europeana_id</option>\n' +
+                    '      <option value="COMPLETENESS">COMPLETENESS</option>\n' +
+                    '      <option value="is_fulltext">is_fulltext</option>\n' +
+                    '      <option value="has_thumbnails">has_thumbnails</option>\n' +
+                    '      <option value="has_media">has_media</option>\n' +
+                    '    </select>\n' +
+                    '    <label>Sort</label>' +
+                    '</div>';
+                sort = sort.firstElementChild;
+                dropdown.appendChild(sort);
+                sortSelect = sort.querySelector('select');
+                M.FormSelect.init(sortSelect, {});
+            }
+            {
+                let sortOrder = document.createElement('div');
+                sortOrder.classList.add('right-align');
+                sortOrder.innerHTML =
+                    '<div class="right-align">' +
+                    '<form action="#">\n' +
+                    '   <label>\n' +
+                    '       <input name="sort_order" type="radio" checked />\n' +
+                    '       <span>ascending</span>\n' +
+                    '   </label>\n' +
+                    '   <label>\n' +
+                    '       <input name="sort_order" type="radio" />\n' +
+                    '       <span>descending</span>\n' +
+                    '   </label>\n' +
+                    '</form>' +
+                    '</div>';
+                sortOrder = sortOrder.firstElementChild;
+                dropdown.appendChild(sortOrder);
+                // sortSelect = sort.querySelectorAll('select');
+                sortOrderAsc = sortOrder.querySelectorAll('input[type="radio"]')[0];
+                sortOrderDesc = sortOrder.querySelectorAll('input[type="radio"]')[1];
+            }
+            {
+                let rows = document.createElement('div');
+                rows.classList.add('rows-wrapper', 'input-field');
+                rows.innerHTML =
+                    '<i class="material-icons prefix">data_usage</i> ' +
+                    '<form action="#">\n' +
+                    '   <label>Rows</label>' +
+                    '   <p class="range-field">\n' +
+                    '       <input type="range" value="10" min="0" max="100" />\n' +
+                    '   </p>\n' +
+                    '</form>';
+                // rows = rows.firstElementChild;
+                dropdown.appendChild(rows);
+                rowsInput = rows.querySelector('input');
+                M.Range.init(rowsInput, {});
+            }
+
+            // dropdown onclick
+            dropdownSwitch.querySelector('input[type="checkbox"]').onclick = () => {
+                dropdown.classList.toggle('hide');
+                footer.classList.toggle('hide');
+            };
+
+            this.themeSelect = themeSelect;
+            this.sortSelect = sortSelect;
+            this.sortOrderDesc = sortOrderDesc;
+            this.sortOrderAsc = sortOrderAsc;
+            this.rowsInput = rowsInput;
+        }
+
+        search() {
+            let themeSelect = this.themeSelect;
+            let sortSelect = this.sortSelect;
+            let sortOrderDesc = this.sortOrderDesc;
+            let rowsInput = this.rowsInput;
+            let search_field = this.search_field;
+
+            const query = search_field.querySelector('#icon_query').value;
+            const searchQuery = new SearchQuery(query);
+
+            // テーマ
+            if (themeSelect.value) {
+                searchQuery.set_theme(themeSelect.value);
+            }
+            // ソート
+            if (sortSelect.value) {
+                // order
+                let order;
+                if (sortOrderDesc.checked) {
+                    order = 'desc';
+                } else {
+                    order = 'asc';
+                }
+                searchQuery.set_sort(sortSelect.value + '+' + order);
+            }
+            // 件数
+            if (rowsInput.value) {
+                let rows = Number(rowsInput.value);
+                if (rows < 0) rows = 10;
+                searchQuery.set_rows(rows);
+            }
+            // todo post query
+            let json = searchQuery.json();
+            console.log(json);
+        }
+
+        appendChild(newChild) {
+            this.content.appendChild(newChild);
+        }
+    }
+
+    customElements.define('search-bar', SearchBar);
+
+    /**
+     * Manifestの検索を行うmodal
+     */
+    class SearchModal extends HTMLElement {
+        constructor() {
+            super();
+        }
+
+        /**
+         * 要素が DOM に挿入されるたびに呼び出されます。
+         * リソースの取得やレンダリングなどの、セットアップ コードの実行に役立ちます。
+         * 一般に、この時点まで作業を遅らせるようにする必要があります。
+         * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
+         */
+        connectedCallback() {
+            this.classList.add('modal');
+            M.Modal.init(this, {});
+
+            // content
+            const content = document.createElement('div');
+            content.classList.add('modal-content');
+            this.content = content;
+            super.appendChild(content);
+
+            // title
+            const title = document.createElement('h3');
+            title.innerHTML =
+                '<i class="material-icons left fontsize-inherit">storage</i>Search Manifest';
+            this.appendChild(title);
+
+            // 検索バーの設置
+            const search_bar = document.createElement('search-bar');
+            this.appendChild(search_bar);
+        }
+
+        appendChild(newChild) {
+            this.content.appendChild(newChild);
+        }
+    }
+
+    customElements.define("search-modal", SearchModal);
 }
 
 run();

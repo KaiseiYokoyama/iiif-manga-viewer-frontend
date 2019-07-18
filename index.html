@@ -15,7 +15,7 @@
         <div class="nav-wrapper">
             <a href="/" class="title">IIIF Manga Viewer</a>
             <ul class="right nav-menu">
-                <li><a href="#modal-search" class="waves-effect waves-light btn">Search Manifest<i class="material-icons right">search</i></a></li>
+                <li><a href="#modal-search" class="waves-effect waves-light btn modal-trigger">Search Manifest<i class="material-icons right">search</i></a></li>
             </ul>
         </div>
     </nav>
@@ -27,6 +27,7 @@
         <div is="iiif-manga-viewer" manifest="https://www.dl.ndl.go.jp/api/iiif/2542527/manifest.json"></div>
                 <div is="iiif-manga-viewer" manifest="https://www.dl.ndl.go.jp/api/iiif/2532216/manifest.json"></div>
     </div>
+    <search-modal id="modal-search"></search-modal>
 </div>
 </body>
 <script src="src/js/thread.js" type="module"></script>

@@ -29,5 +29,58 @@ div.contents viewer-s {
   height: 100%;
   display: flex;
 }
+div.contents .modal {
+  width: 70%;
+  max-height: 90%;
+}
+div.contents search-modal {
+  background-color: #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 600px;
+}
+div.contents search-modal search-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: right;
+  max-width: max(80%, 700px);
+}
+div.contents search-modal search-bar > * {
+  width: 100%;
+}
+div.contents search-modal search-bar .card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: right;
+}
+div.contents search-modal search-bar .card-content > * {
+  width: 100%;
+}
+div.contents search-modal search-bar .card-content > .input-field {
+  flex: 1 1;
+  margin-bottom: 0;
+}
+div.contents search-modal search-bar .card-content > .dropdown {
+  padding-left: 20%;
+  flex-basis: 100%;
+}
+div.contents search-modal search-bar .card-content > .dropdown > .rows-wrapper.input-field {
+  display: flex;
+}
+div.contents search-modal search-bar .card-content > .dropdown > .rows-wrapper.input-field > i {
+  flex: 0 0;
+}
+div.contents search-modal search-bar .card-content > .dropdown > .rows-wrapper.input-field > form {
+  margin-left: 3rem;
+  flex: 1 1;
+}
+
+.fontsize-inherit {
+  font-size: inherit !important;
+}
 
 /*# sourceMappingURL=style.css.map */
