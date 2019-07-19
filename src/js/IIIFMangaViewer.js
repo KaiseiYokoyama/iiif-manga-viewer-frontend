@@ -950,7 +950,7 @@ async function run() {
             {
                 const fab = document.createElement('a');
                 fab.classList.add('btn-floating', 'halfway-fab', 'waves-effect', 'waves-light', 'btn-large');
-                fab.innerHTML = '<i class="material-icons">add</i>';
+                fab.innerHTML = '<i class="material-icons">launch</i>';
                 cardImage.appendChild(fab);
             }
             this.appendChild(cardImage);
