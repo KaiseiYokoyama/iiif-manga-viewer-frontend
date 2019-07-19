@@ -870,10 +870,16 @@ async function run() {
                 "あいご十二段",
                 "インターネット公開（保護期間満了）",
                 "https://www.dl.ndl.go.jp/api/iiif/2532216/T0000001/full/full/0/default.jpg");
+            let sample2 = new SearchResult('http://www2.dhii.jp/nijl/NIJL0008/NA4-0644/manifest.json',
+                '絵本松の調',
+                '勝川春章 画',
+                undefined);
             const sampleCard = new SearchCard(sample);
             const sampleCard1 = new SearchCard(sample1);
+            const sampleCard2 = new SearchCard(sample2);
             this.appendCard(sampleCard);
             this.appendCard(sampleCard1);
+            this.appendCard(sampleCard2);
 
             const url = '';
             fetch(url, {
@@ -928,7 +934,11 @@ async function run() {
             cardImage.classList.add('card-image');
             {
                 const img = document.createElement('img');
-                img.src = this.result.thumbnail();
+                if (this.result.thumbnail()) {
+                    img.src = this.result.thumbnail();
+                } else {
+                    img.src = 'https://material.io/tools/icons/static/icons/baseline-collections-24px.svg';
+                }
                 cardImage.appendChild(img);
             }
             {
@@ -939,7 +949,7 @@ async function run() {
             }
             {
                 const fab = document.createElement('a');
-                fab.classList.add('btn-floating', 'halfway-fab', 'waves-effect', 'waves-light','btn-large');
+                fab.classList.add('btn-floating', 'halfway-fab', 'waves-effect', 'waves-light', 'btn-large');
                 fab.innerHTML = '<i class="material-icons">add</i>';
                 cardImage.appendChild(fab);
             }
