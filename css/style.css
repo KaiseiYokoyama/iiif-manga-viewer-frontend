@@ -19,7 +19,7 @@ div.contents {
   height: 100vh;
   max-height: calc(100vh - 64px);
 }
-div.contents div.viewers {
+div.contents div#viewers {
   width: 100%;
   height: 100%;
   display: flex;

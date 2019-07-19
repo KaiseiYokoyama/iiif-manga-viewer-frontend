@@ -952,6 +952,15 @@ async function run() {
                 fab.classList.add('btn-floating', 'halfway-fab', 'waves-effect', 'waves-light', 'btn-large');
                 fab.innerHTML = '<i class="material-icons">launch</i>';
                 cardImage.appendChild(fab);
+
+                // onclick
+                fab.onclick = (event) => {
+                    const viewers = document.getElementById('viewers');
+                    let viewer = document.createElement('div');
+                    viewer.innerHTML = '<div is="iiif-manga-viewer" manifest="'+this.result.url()+'"></div>';
+                    viewer = viewer.firstElementChild;
+                    viewers.appendChild(viewer);
+                }
             }
             this.appendChild(cardImage);
 
