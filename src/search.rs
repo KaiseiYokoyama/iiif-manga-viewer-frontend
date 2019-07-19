@@ -1,8 +1,9 @@
 use wasm_bindgen::prelude::*;
+use std::str::FromStr;
 
 /// サーバーから送られてくる検索結果(1件)
 #[wasm_bindgen]
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct SearchResult {
     url: String,
     title: String,
@@ -12,6 +13,11 @@ pub struct SearchResult {
 
 #[wasm_bindgen]
 impl SearchResult {
+    #[wasm_bindgen(constructor)]
+    pub fn new(url: String, title: String, description: String, thumbnail: Option<String>) -> Self {
+        Self { url, title, description, thumbnail }
+    }
+
     pub fn url(&self) -> String {
         self.url.clone()
     }
@@ -28,6 +34,34 @@ impl SearchResult {
         self.thumbnail.clone()
     }
 }
+
+/// サーバーから送られてくる検索結果
+#[wasm_bindgen]
+pub struct SearchResults {
+    results: Vec<SearchResult>
+}
+
+#[wasm_bindgen]
+impl SearchResults {
+    #[wasm_bindgen(constructor)]
+    pub fn new(s: String) -> SearchResults {
+        match serde_json::from_str(&s) {
+            Ok(results) => SearchResults { results },
+            Err(_) => SearchResults { results: vec![] },
+        }
+    }
+
+    pub fn len(&self) -> usize {
+        let SearchResults { results: vec } = &self;
+        vec.len()
+    }
+
+    pub fn get(&self, i: usize) -> Option<SearchResult> {
+        let SearchResults { results: vec } = &self;
+        vec.get(i).cloned()
+    }
+}
+
 
 /// サーバーに投げる検索クエリ
 /// [参考](https://pro.europeana.eu/resources/apis/search) ## Getting Started

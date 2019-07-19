@@ -9,6 +9,7 @@ body {
     .nav-wrapper {
       display: flex;
       justify-content: center;
+
       .title {
         font-size: 1.3rem;
       }
@@ -26,7 +27,7 @@ div.contents {
   height: 100vh;
   max-height: calc(100vh - 64px);
 
-  div.viewers {
+  div#viewers {
     width: 100%;
     height: 100%;
     display: flex;
@@ -37,4 +38,98 @@ div.contents {
     height: 100%;
     display: flex;
   }
+
+  .modal {
+    width: 70%;
+    max-height: 90%;
+  }
+
+  search-modal {
+    background-color: $primary-color;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 600px;
+
+    //overflow: hidden !important;
+
+    search-bar {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: right;
+      //flex-wrap: wrap;
+      max-width: max(80%, 700px);
+
+      > * {
+        width: 100%;
+      }
+
+      .card-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: right;
+
+        //padding-top: 0;
+
+        > * {
+          width: 100%;
+        }
+
+        > .input-field {
+          flex: 1 1;
+          margin-bottom: 0;
+        }
+
+        > .dropdown {
+          padding-left: 20%;
+          flex-basis: 100%;
+
+          > .rows-wrapper.input-field {
+            display: flex;
+
+            > i {
+              flex: 0 0;
+            }
+
+            > form {
+              margin-left: 3rem;
+              flex: 1 1;
+            }
+          }
+        }
+      }
+    }
+
+    .cards {
+      display: flex;
+
+      .card {
+        width: 30%;
+        margin: 2%;
+        //height: 200px;
+
+        .card-image {
+          img {
+            background-color: $primary-color-dark;
+            height: 200px;
+            object-fit: contain;
+          }
+        }
+
+        .card-content {
+          height: 200px;
+          text-overflow: ellipsis;
+          overflow: hidden;
+        }
+      }
+    }
+  }
+}
+
+.fontsize-inherit {
+  font-size: inherit !important;
 }

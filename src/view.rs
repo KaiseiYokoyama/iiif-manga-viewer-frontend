@@ -93,33 +93,33 @@ pub mod icon_view {
     }
 }
 
-pub mod search_view {
-    use super::*;
-
-    /// Manifestの検索結果
-    #[wasm_bindgen]
-    pub struct SearchView {
-        element: Element,
-    }
-
-    impl View for SearchView {
-        fn new(element: Element) -> Self {
-            Self { element }
-        }
-
-        /// 何もしない
-        fn initialize(&self, viewer_images: &Vec<ViewerImage>) {
-//            unimplemented!()
-        }
-    }
-
-    #[wasm_bindgen]
-    impl SearchView {
-        pub fn results(&self, string: String) {
-            // let results = match serde_json::from_str(&string) {
-            //     Ok(s) => { s }
-            //     Err(_) => { vec![] }
-            // };
-        }
-    }
-}
+//pub mod search_view {
+//    use super::*;
+//
+//    /// Manifestの検索結果
+//    #[wasm_bindgen]
+//    pub struct SearchView {
+//        element: Element,
+//    }
+//
+//    impl View for SearchView {
+//        fn new(element: Element) -> Self {
+//            Self { element }
+//        }
+//
+//        /// 何もしない
+//        fn initialize(&self, viewer_images: &Vec<ViewerImage>) {
+////            unimplemented!()
+//        }
+//    }
+//
+//    #[wasm_bindgen]
+//    impl SearchView {
+//        pub fn results(&self, string: String) {
+//            // let results = match serde_json::from_str(&string) {
+//            //     Ok(s) => { s }
+//            //     Err(_) => { vec![] }
+//            // };
+//        }
+//    }
+//}

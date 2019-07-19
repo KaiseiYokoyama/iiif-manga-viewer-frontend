@@ -66,40 +66,6 @@ div[is=iiif-manga-viewer] view-s icon-view icon-view-item {
   flex-direction: column;
   margin: 20px;
 }
-div[is=iiif-manga-viewer] view-s search-view {
-  background-color: white;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 600px;
-}
-div[is=iiif-manga-viewer] view-s search-view search-bar {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: right;
-  width: 80%;
-}
-div[is=iiif-manga-viewer] view-s search-view search-bar > * {
-  width: 100%;
-}
-div[is=iiif-manga-viewer] view-s search-view search-bar > .input-field {
-  flex: 1 1;
-}
-div[is=iiif-manga-viewer] view-s search-view search-bar > .dropdown {
-  padding-left: 20%;
-  flex-basis: 100%;
-}
-div[is=iiif-manga-viewer] view-s search-view search-bar > .dropdown > .rows-wrapper.input-field {
-  display: flex;
-}
-div[is=iiif-manga-viewer] view-s search-view search-bar > .dropdown > .rows-wrapper.input-field > i {
-  flex: 0 0;
-}
-div[is=iiif-manga-viewer] view-s search-view search-bar > .dropdown > .rows-wrapper.input-field > form {
-  margin-left: 3rem;
-  flex: 1 1;
-}
 div[is=iiif-manga-viewer] .fixed-action-btn {
   position: absolute;
   right: auto;
