@@ -103,6 +103,28 @@ div.contents {
         }
       }
     }
+
+    .cards {
+      display: flex;
+
+      .card {
+        width: 30%;
+        margin: 2%;
+        //height: 200px;
+
+        .card-image {
+          img {
+            height: 200px;
+          }
+        }
+
+        .card-content {
+          height: 200px;
+          text-overflow: ellipsis;
+          overflow: hidden;
+        }
+      }
+    }
   }
 }
 

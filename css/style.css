@@ -78,6 +78,21 @@ div.contents search-modal search-bar .card-content > .dropdown > .rows-wrapper.i
   margin-left: 3rem;
   flex: 1 1;
 }
+div.contents search-modal .cards {
+  display: flex;
+}
+div.contents search-modal .cards .card {
+  width: 30%;
+  margin: 2%;
+}
+div.contents search-modal .cards .card .card-image img {
+  height: 200px;
+}
+div.contents search-modal .cards .card .card-content {
+  height: 200px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
 
 .fontsize-inherit {
   font-size: inherit !important;

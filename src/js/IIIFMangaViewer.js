@@ -1,4 +1,10 @@
-import init, {Viewer, Direction, SearchQuery} from '../../pkg/iiif_manga_viewer_frontend.js';
+import init, {
+    Viewer,
+    Direction,
+    SearchQuery,
+    SearchResult,
+    SearchResults
+} from '../../pkg/iiif_manga_viewer_frontend.js';
 
 async function run() {
     await init();
@@ -639,8 +645,9 @@ async function run() {
      * 検索バー
      */
     class SearchBar extends HTMLElement {
-        constructor() {
+        constructor(cards) {
             super();
+            this.cards = cards;
         }
 
         /**
@@ -849,14 +856,103 @@ async function run() {
             // todo post query
             let json = searchQuery.json();
             console.log(json);
+            // todo remove sample
+            console.log('sample output');
+            // サンプル出力
+            let sample = new SearchResult("https://www.dl.ndl.go.jp/api/iiif/2542527/manifest.json",
+                "会津日新館細江図",
+                "要素が DOM に挿入されるたびに呼び出されます。\n" +
+                "リソースの取得やレンダリングなどの、セットアップ コードの実行に役立ちます。\n" +
+                "一般に、この時点まで作業を遅らせるようにする必要があります。\n" +
+                "[参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)",
+                "https://www.dl.ndl.go.jp/api/iiif/2542527/T0000001/full/full/0/default.jpg");
+            let sample1 = new SearchResult("https://www.dl.ndl.go.jp/api/iiif/2532216/manifest.json",
+                "あいご十二段",
+                "インターネット公開（保護期間満了）",
+                "https://www.dl.ndl.go.jp/api/iiif/2532216/T0000001/full/full/0/default.jpg");
+            const sampleCard = new SearchCard(sample);
+            const sampleCard1 = new SearchCard(sample1);
+            this.appendCard(sampleCard);
+            this.appendCard(sampleCard1);
+
+            const url = '';
+            fetch(url, {
+                method: 'POST',
+                body: json,
+            }).then(res => {
+                return res.text()
+            }).then(text => {
+                const results = new SearchResults(text);
+                if (!results) return;
+                for (let i = 0; i < results.len(); i++) {
+                    const result = results.get(i);
+                }
+            }).catch(err => {
+            })
         }
 
         appendChild(newChild) {
             this.content.appendChild(newChild);
         }
+
+        appendCard(newCard) {
+            this.cards.appendChild(newCard);
+        }
     }
 
     customElements.define('search-bar', SearchBar);
+
+    /**
+     * Manifestの検索結果(1件)
+     */
+    class SearchCard extends HTMLElement {
+        /**
+         *
+         * @param result {SearchResult}
+         */
+        constructor(result) {
+            super();
+            this.result = result;
+        }
+
+        /**
+         * 要素が DOM に挿入されるたびに呼び出されます。
+         * リソースの取得やレンダリングなどの、セットアップ コードの実行に役立ちます。
+         * 一般に、この時点まで作業を遅らせるようにする必要があります。
+         * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
+         */
+        connectedCallback() {
+            // card
+            this.classList.add('card');
+            const cardImage = document.createElement('div');
+            cardImage.classList.add('card-image');
+            {
+                const img = document.createElement('img');
+                img.src = this.result.thumbnail();
+                cardImage.appendChild(img);
+            }
+            {
+                const span = document.createElement('span');
+                span.classList.add('card-title');
+                span.innerHTML = this.result.title();
+                cardImage.appendChild(span);
+            }
+            {
+                const fab = document.createElement('a');
+                fab.classList.add('btn-floating', 'halfway-fab', 'waves-effect', 'waves-light');
+                fab.innerHTML = '<i class="material-icons">add</i>';
+                cardImage.appendChild(fab);
+            }
+            this.appendChild(cardImage);
+
+            const cardContent = document.createElement('div');
+            cardContent.classList.add('card-content');
+            cardContent.innerHTML = this.result.description();
+            this.appendChild(cardContent);
+        }
+    }
+
+    customElements.define('search-card', SearchCard);
 
     /**
      * Manifestの検索を行うmodal
@@ -888,9 +984,15 @@ async function run() {
                 '<i class="material-icons left fontsize-inherit">storage</i>Search Manifest';
             this.appendChild(title);
 
+            // cards
+            const cards = document.createElement('div');
+            cards.classList.add('cards');
+
             // 検索バーの設置
-            const search_bar = document.createElement('search-bar');
+            const search_bar = new SearchBar(cards);
             this.appendChild(search_bar);
+            // cardsの設置
+            this.appendChild(cards);
         }
 
         appendChild(newChild) {
