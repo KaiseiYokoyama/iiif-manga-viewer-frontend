@@ -86,7 +86,9 @@ div.contents search-modal .cards .card {
   margin: 2%;
 }
 div.contents search-modal .cards .card .card-image img {
+  background-color: #bababa;
   height: 200px;
+  object-fit: contain;
 }
 div.contents search-modal .cards .card .card-content {
   height: 200px;
