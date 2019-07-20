@@ -42,18 +42,46 @@ div[is=iiif-manga-viewer].card > nav .right {
   position: absolute;
   right: 0;
 }
+div[is=iiif-manga-viewer].card > nav .left .dropdown-content li i {
+  line-height: inherit;
+  height: inherit;
+}
+div[is=iiif-manga-viewer].card > nav .left .dropdown-content li .close {
+  color: #F44336;
+}
 div[is=iiif-manga-viewer].card > nav .dropdown-content li {
   color: #5c6bc0;
 }
 div[is=iiif-manga-viewer].card > nav .dropdown-content li a {
   color: #5c6bc0;
 }
-div[is=iiif-manga-viewer].card > nav .dropdown-content li a.close {
-  color: #F44336;
+div[is=iiif-manga-viewer].card > nav .dropdown-content.filter-dropdown {
+  position: absolute;
+  right: 0 !important;
+  left: auto !important;
+  overflow: hidden;
 }
-div[is=iiif-manga-viewer].card > nav .dropdown-content li i {
-  line-height: inherit;
-  height: inherit;
+div[is=iiif-manga-viewer].card > nav .dropdown-content.filter-dropdown li {
+  padding: 0 10px;
+  overflow: hidden;
+}
+div[is=iiif-manga-viewer].card > nav .dropdown-content.filter-dropdown li .input-field {
+  display: flex;
+  align-items: center;
+}
+div[is=iiif-manga-viewer].card > nav .dropdown-content.filter-dropdown li .input-field > i.prefix {
+  position: static;
+  flex: 0 0;
+}
+div[is=iiif-manga-viewer].card > nav .dropdown-content.filter-dropdown li .input-field > form {
+  flex: 1 1;
+  padding-left: 1rem;
+}
+div[is=iiif-manga-viewer].card > nav .dropdown-content.filter-dropdown li .input-field > form p.range-field {
+  margin: 5px 0;
+}
+div[is=iiif-manga-viewer].card > nav .dropdown-content.filter-dropdown li .input-field > form p.range-field > input {
+  padding-left: 0;
 }
 div[is=iiif-manga-viewer].card canvas {
   display: block;

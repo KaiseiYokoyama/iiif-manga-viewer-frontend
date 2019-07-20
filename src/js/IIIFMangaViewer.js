@@ -360,6 +360,8 @@ async function run() {
          * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
          */
         connectedCallback() {
+            viewerCounter++;
+
             // 子要素をすべて削除
             this.textContent = null;
 
@@ -371,29 +373,27 @@ async function run() {
             this.appendChild(canvas);
 
             // navbar
-            let trigger, dropdownUl;
+            let viewDropdownTrigger, filterDropdownTrigger, filterDropdown;
             const navBar = document.createElement('nav');
             {
                 const navWrapper = document.createElement('div');
                 navWrapper.classList.add('nav-wrapper');
 
-                const ul = document.createElement('ul');
-                ul.classList.add('left', 'toolbar-icons');
+                const ulL = document.createElement('ul');
+                ulL.classList.add('left', 'toolbar-icons');
                 {
                     const id = 'views-dropdown' + viewerCounter;
-                    viewerCounter++;
 
                     const li = document.createElement('li');
                     const a = document.createElement('a');
-                    trigger = a;
+                    viewDropdownTrigger = a;
                     a.classList.add('dropdown-trigger');
                     a.setAttribute('data-target', id);
                     a.innerHTML = '<i class="material-icons">menu</i>';
                     li.appendChild(a);
-                    ul.appendChild(li);
+                    ulL.appendChild(li);
 
                     const dropdown = document.createElement('ul');
-                    dropdownUl = dropdown;
                     dropdown.classList.add('dropdown-content');
                     dropdown.id = id;
                     {
@@ -422,7 +422,7 @@ async function run() {
                     };
                     this.listViewIcon = a;
                     li.appendChild(a);
-                    ul.appendChild(li);
+                    ulL.appendChild(li);
                 }
                 {
                     const li = document.createElement('li');
@@ -434,22 +434,71 @@ async function run() {
                     };
                     this.iconViewIcon = a;
                     li.appendChild(a);
-                    ul.appendChild(li);
+                    ulL.appendChild(li);
                 }
-                navWrapper.appendChild(ul);
+                navWrapper.appendChild(ulL);
 
                 const label = document.createElement('span');
                 this.label = label;
                 navWrapper.appendChild(label);
 
+                const ulR = document.createElement('ul');
+                ulR.classList.add('right', 'toolbar-icons');
+                {
+                    const id = 'filters-dropdown' + viewerCounter;
+
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    filterDropdownTrigger = a;
+                    a.classList.add('dropdown-trigger');
+                    a.setAttribute('data-target', id);
+                    a.innerHTML =
+                        '<i class="material-icons">tune</i>';
+                    li.appendChild(a);
+                    ulR.appendChild(li);
+
+                    // dropdown-content
+                    const dropdown = document.createElement('ul');
+                    filterDropdown = dropdown;
+                    dropdown.id = id;
+                    dropdown.classList.add('dropdown-content', 'filter-dropdown');
+                    {
+                        // brightness
+                        const li = document.createElement('li');
+                        li.innerHTML =
+                            '<div class="input-field">' +
+                            '   <i class="material-icons prefix">brightness_low</i> ' +
+                            '   <form action="#">' +
+                            '       <label>Brightness</label>' +
+                            '       <p class="range-field">' +
+                            '           <input type="range" value="100" min="0" max="200" />' +
+                            '       </p>' +
+                            '   </form>' +
+                            '</div>';
+                        dropdown.appendChild(li);
+                    }
+                    navBar.appendChild(dropdown);
+                }
+                navWrapper.appendChild(ulR);
+
                 navBar.appendChild(navWrapper);
             }
             this.appendChild(navBar);
 
-            M.Dropdown.init(trigger, {
+            M.Dropdown.init(viewDropdownTrigger, {
                 constrainWidth: false,
                 coverTrigger: false,
                 closeOnClick: false,
+            });
+            M.Dropdown.init(filterDropdownTrigger, {
+                alignment: 'right',
+                constrainWidth: false,
+                coverTrigger: false,
+                closeOnClick: false,
+                onOpenEnd: () => {
+                    filterDropdown.style.width = '400px';
+                    M.Range.init(filterDropdown.querySelectorAll('input[type="range"]'), {});
+                },
             });
 
             // viewsを設定

@@ -14,8 +14,9 @@ div[is="iiif-manga-viewer"].card {
 
   margin-right: 5px;
   margin-left: 5px;
-
   margin-top: calc(0.5rem + 40px);
+
+
 
   > nav {
     position: absolute;
@@ -58,21 +59,64 @@ div[is="iiif-manga-viewer"].card {
       right: 0;
     }
 
+    .left{
+      .dropdown-content {
+        li {
+          i {
+            line-height: inherit;
+            height: inherit;
+          }
+
+          .close {
+            color: $error-color;
+          }
+        }
+      }
+    }
+
     .dropdown-content {
       li {
         color: $secondary-color;
 
         a {
           color: $secondary-color;
-
-          &.close {
-            color: $error-color;
-          }
         }
+      }
 
-        i {
-          line-height: inherit;
-          height: inherit;
+      &.filter-dropdown {
+        position: absolute;
+        right: 0 !important;
+        left: auto !important;
+
+        overflow: hidden;
+
+        li {
+          padding: 0 10px;
+
+          overflow: hidden;
+
+          .input-field {
+            display: flex;
+            align-items: center;
+
+            > i.prefix {
+              position: static;
+              flex: 0 0;
+            }
+
+            > form {
+              flex: 1 1;
+              padding-left: 1rem;
+
+              p.range-field {
+                margin: 5px 0;
+
+                > input {
+                  padding-left: 0;
+                }
+              }
+            }
+          }
         }
       }
     }
