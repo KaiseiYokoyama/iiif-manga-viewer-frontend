@@ -484,7 +484,7 @@ async function run() {
                             '<div class="input-field">' +
                             '   <i class="material-icons prefix">brightness_medium</i> ' +
                             '   <form action="#">' +
-                            '       <label>Brightness</label>' +
+                            '       <label>Contrast</label>' +
                             '       <p class="range-field">' +
                             '           <input type="range" value="100" min="0" max="200" />' +
                             '       </p>' +
@@ -499,7 +499,7 @@ async function run() {
                             '<div class="input-field">' +
                             '   <i class="material-icons prefix">gradient</i> ' +
                             '   <form action="#">' +
-                            '       <label>Brightness</label>' +
+                            '       <label>Gradient</label>' +
                             '       <p class="range-field">' +
                             '           <input type="range" value="100" min="0" max="100" />' +
                             '       </p>' +
@@ -514,7 +514,7 @@ async function run() {
                             '<div class="input-field">' +
                             '   <i class="material-icons prefix">filter_b_and_w</i> ' +
                             '   <form action="#">' +
-                            '       <label>Brightness</label>' +
+                            '       <label>Greyscale</label>' +
                             '       <p class="range-field">' +
                             '           <input type="range" value="0" min="0" max="100" />' +
                             '       </p>' +
@@ -529,7 +529,7 @@ async function run() {
                             '<div class="input-field">' +
                             '   <i class="material-icons prefix">invert_colors</i> ' +
                             '   <form action="#">' +
-                            '       <label>Brightness</label>' +
+                            '       <label>Hue Rotate</label>' +
                             '       <p class="range-field">' +
                             '           <input type="range" value="0" min="0" max="360" />' +
                             '       </p>' +
