@@ -60,10 +60,19 @@ div[is="iiif-manga-viewer"].card {
 
     .dropdown-content {
       li {
-        span {
-          i {
-            line-height: inherit;
+        color: $secondary-color;
+
+        a {
+          color: $secondary-color;
+
+          &.close {
+            color: $error-color;
           }
+        }
+
+        i {
+          line-height: inherit;
+          height: inherit;
         }
       }
     }

@@ -385,21 +385,18 @@ async function run() {
                     dropdownUl = dropdown;
                     dropdown.classList.add('dropdown-content');
                     dropdown.id = id;
-                    // {
-                    //     const li = document.createElement('li');
-                    //     const p = document.createElement('p');
-                    //     const label = document.createElement('label');
-                    //     label.innerHTML =
-                    //         '<input type="checkbox" checked/>\n' +
-                    //         '<span><i class="material-icons">view_list</i>List View</span>';
-                    //     const input = label.querySelector('input');
-                    //     input.onclick = () => {
-                    //         this.listView.onOff();
-                    //     };
-                    //     p.appendChild(label);
-                    //     li.appendChild(p);
-                    //     dropdown.appendChild(li);
-                    // }
+                    {
+                        const li = document.createElement('li');
+                        const a = document.createElement('a');
+                        a.classList.add('close');
+                        a.innerHTML =
+                            '<i class="material-icons">close</i>Close';
+                        a.onclick = () => {
+                            this.remove();
+                        };
+                        li.appendChild(a);
+                        dropdown.appendChild(li);
+                    }
                     // {
                     //     const li = document.createElement('li');
                     //     const label = document.createElement('label');

@@ -42,8 +42,18 @@ div[is=iiif-manga-viewer].card > nav .right {
   position: absolute;
   right: 0;
 }
-div[is=iiif-manga-viewer].card > nav .dropdown-content li span i {
+div[is=iiif-manga-viewer].card > nav .dropdown-content li {
+  color: #5c6bc0;
+}
+div[is=iiif-manga-viewer].card > nav .dropdown-content li a {
+  color: #5c6bc0;
+}
+div[is=iiif-manga-viewer].card > nav .dropdown-content li a.close {
+  color: #F44336;
+}
+div[is=iiif-manga-viewer].card > nav .dropdown-content li i {
   line-height: inherit;
+  height: inherit;
 }
 div[is=iiif-manga-viewer].card canvas {
   display: block;
