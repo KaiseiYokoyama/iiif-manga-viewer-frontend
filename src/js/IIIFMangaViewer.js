@@ -445,6 +445,21 @@ async function run() {
                 const ulR = document.createElement('ul');
                 ulR.classList.add('right', 'toolbar-icons');
                 {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.innerHTML =
+                        '<i class="material-icons">save_alt</i>';
+                    a.onclick = () => {
+                        try {
+                            localStorage.setItem(this.viewer.label()+'_' + viewerCounter,canvas.toDataURL());
+                        } catch (e) {
+                            console.log(e);
+                        }
+                    };
+                    li.appendChild(a);
+                    ulR.appendChild(li);
+                }
+                {
                     const id = 'filters-dropdown' + viewerCounter;
 
                     const li = document.createElement('li');
