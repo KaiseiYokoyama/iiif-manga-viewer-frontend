@@ -450,11 +450,32 @@ async function run() {
                     a.innerHTML =
                         '<i class="material-icons">save_alt</i>';
                     a.onclick = () => {
-                        try {
-                            localStorage.setItem(this.viewer.label()+'_' + viewerCounter,canvas.toDataURL());
-                        } catch (e) {
-                            console.log(e);
-                        }
+                        let base64ToBlob = (base64) => {
+                            let blob;
+                            let bin = atob(base64.replace(/^.*,/, ""));
+                            let buffer = new Uint8Array(bin.length);
+                            for (let i = 0; i < bin.length; i++) {
+                                buffer[i] = bin.charCodeAt(i);
+                            }
+                            // Blobを作成
+                            try {
+                                blob = new Blob([buffer.buffer], {
+                                    type: "image/png"
+                                });
+                            } catch (e) {
+                                return false;
+                            }
+                            return blob;
+                        };
+
+                        const link = document.createElement('a');
+                        link.style.display = 'none';
+                        const base64 = canvas.toDataURL('image/png').split(',')[1];
+                        link.href = window.URL.createObjectURL(base64ToBlob(base64));
+                        link.download = this.viewer.label() + ' ' + this.viewer.index + '.png';
+                        document.body.appendChild(link);
+
+                        link.click();
                     };
                     li.appendChild(a);
                     ulR.appendChild(li);
