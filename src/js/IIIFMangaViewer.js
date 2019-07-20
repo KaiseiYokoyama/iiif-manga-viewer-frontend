@@ -523,13 +523,13 @@ async function run() {
                         dropdown.appendChild(li);
                     }
                     {
-                        // hue rotate
+                        // invert
                         const li = document.createElement('li');
                         li.innerHTML =
                             '<div class="input-field">' +
                             '   <i class="material-icons prefix">invert_colors</i> ' +
                             '   <form action="#">' +
-                            '       <label>Hue Rotate</label>' +
+                            '       <label>Invert</label>' +
                             '       <p class="range-field">' +
                             '           <input type="range" value="0" min="0" max="360" />' +
                             '       </p>' +
