@@ -462,6 +462,15 @@ async function run() {
                     filterDropdown = dropdown;
                     dropdown.id = id;
                     dropdown.classList.add('dropdown-content', 'filter-dropdown');
+                    let brightness, contrast, gradient, greyscale, invert;
+                    let onchange = () => {
+                        canvas.style.filter =
+                            'brightness(' + brightness.value + '%) ' +
+                            'contrast(' + contrast.value + '%) ' +
+                            'grayscale(' + greyscale.value + '%) ' +
+                            'saturate(' + gradient.value + '%) ' +
+                            'invert(' + invert.value + '%) ';
+                    };
                     {
                         // brightness
                         const li = document.createElement('li');
@@ -475,6 +484,10 @@ async function run() {
                             '       </p>' +
                             '   </form>' +
                             '</div>';
+                        brightness = li.querySelector('input');
+                        brightness.oninput = () => {
+                            onchange();
+                        };
                         dropdown.appendChild(li);
                     }
                     {
@@ -490,6 +503,10 @@ async function run() {
                             '       </p>' +
                             '   </form>' +
                             '</div>';
+                        contrast = li.querySelector('input');
+                        contrast.oninput = () => {
+                            onchange();
+                        };
                         dropdown.appendChild(li);
                     }
                     {
@@ -505,6 +522,10 @@ async function run() {
                             '       </p>' +
                             '   </form>' +
                             '</div>';
+                        gradient = li.querySelector('input');
+                        gradient.oninput = () => {
+                            onchange();
+                        };
                         dropdown.appendChild(li);
                     }
                     {
@@ -520,6 +541,10 @@ async function run() {
                             '       </p>' +
                             '   </form>' +
                             '</div>';
+                        greyscale = li.querySelector('input');
+                        greyscale.oninput = () => {
+                            onchange();
+                        };
                         dropdown.appendChild(li);
                     }
                     {
@@ -531,10 +556,14 @@ async function run() {
                             '   <form action="#">' +
                             '       <label>Invert</label>' +
                             '       <p class="range-field">' +
-                            '           <input type="range" value="0" min="0" max="360" />' +
+                            '           <input type="range" value="0" min="0" max="100" />' +
                             '       </p>' +
                             '   </form>' +
                             '</div>';
+                        invert = li.querySelector('input');
+                        invert.oninput = () => {
+                            onchange();
+                        };
                         dropdown.appendChild(li);
                     }
                     navBar.appendChild(dropdown);
