@@ -6,7 +6,7 @@ i {
   font-style: normal;
 }
 
-div[is="iiif-manga-viewer"] {
+div[is="iiif-manga-viewer"].card {
   position: relative;
   flex: 1 1;
   max-width: 100vw;
@@ -14,6 +14,117 @@ div[is="iiif-manga-viewer"] {
 
   margin-right: 5px;
   margin-left: 5px;
+  margin-top: calc(0.5rem + 40px);
+
+
+
+  > nav {
+    position: absolute;
+    top: -40px;
+    background-color: $secondary-color;
+    color: white;
+
+    z-index: 100;
+
+    height: 40px;
+    line-height: 40px;
+
+    .brand-logo {
+      color: white;
+    }
+
+    a {
+      color: white;
+    }
+
+    .toolbar-icons {
+      a.view-available {
+        background-color: rgba(0,0,0,0.2);
+      }
+    }
+
+    i {
+      height: 40px;
+      line-height: 40px;
+      color: inherit;
+    }
+
+    .left {
+      position: absolute;
+      left: 0;
+    }
+
+    .right {
+      position: absolute;
+      right: 0;
+    }
+
+    .left{
+      .dropdown-content {
+        li {
+          i {
+            line-height: inherit;
+            height: inherit;
+          }
+
+          .close {
+            color: $error-color;
+          }
+        }
+      }
+    }
+
+    .dropdown-content {
+      li {
+        color: $secondary-color;
+
+        a {
+          color: $secondary-color;
+        }
+      }
+
+      &.filter-dropdown {
+        position: absolute;
+        right: 0 !important;
+        left: auto !important;
+
+        overflow: hidden;
+
+        background-color: rgba(255,255,255,0.65);
+
+        li {
+          background-color: rgba(255,255,255,0);
+
+          padding: 0 10px;
+
+          overflow: hidden;
+
+          .input-field {
+            display: flex;
+            align-items: center;
+
+            > i.prefix {
+              position: static;
+              flex: 0 0;
+            }
+
+            > form {
+              flex: 1 1;
+              padding-left: 1rem;
+
+              p.range-field {
+                margin: 5px 0;
+
+                > input {
+                  padding-left: 0;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 
   canvas {
     display: block;
@@ -35,7 +146,7 @@ div[is="iiif-manga-viewer"] {
 
     display: flex;
 
-    background-color: rgba(256,256,256,0.87);
+    background-color: rgba(256, 256, 256, 0.87);
 
     ul.image-list {
       //height: 100%;
@@ -47,6 +158,8 @@ div[is="iiif-manga-viewer"] {
 
       cursor: pointer;
 
+      border: none;
+
       &::-webkit-scrollbar {
         display: none;
       }
@@ -57,7 +170,7 @@ div[is="iiif-manga-viewer"] {
 
       li.image-list-item {
         &:hover {
-          background-color: rgba(0,0,0,0.2);
+          background-color: rgba(0, 0, 0, 0.2);
         }
 
         i.status-icon:after {
