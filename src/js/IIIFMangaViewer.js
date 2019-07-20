@@ -105,6 +105,13 @@ async function run() {
 
         onOff() {
             this.classList.toggle('hide');
+
+            const a = this.mangaViewer.iconViewIcon;
+            if (!this.classList.contains('hide')) {
+                a.classList.add('view-available');
+            } else {
+                a.classList.remove('view-available');
+            }
         }
 
         /**
@@ -213,6 +220,13 @@ async function run() {
 
         onOff() {
             this.classList.toggle('hide');
+
+            const a = this.mangaViewer.listViewIcon;
+            if (!this.classList.contains('hide')) {
+                a.classList.add('view-available');
+            } else {
+                a.classList.remove('view-available');
+            }
         }
 
         /**
@@ -314,15 +328,6 @@ async function run() {
         }
 
         /**
-         * 要素が DOM に挿入されるたびに呼び出されます。
-         * リソースの取得やレンダリングなどの、セットアップ コードの実行に役立ちます。
-         * 一般に、この時点まで作業を遅らせるようにする必要があります。
-         * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
-         */
-        // connectedCallback() {
-        // }
-
-        /**
          * 要素が DOM から削除されるたびに呼び出されます。
          * クリーンアップ コードの実行（イベント リスナーの削除など）に役立ちます。
          * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
@@ -348,6 +353,12 @@ async function run() {
         attributeChangedCallback(name, oldValue, newValue) {
         }
 
+        /**
+         * 要素が DOM に挿入されるたびに呼び出されます。
+         * リソースの取得やレンダリングなどの、セットアップ コードの実行に役立ちます。
+         * 一般に、この時点まで作業を遅らせるようにする必要があります。
+         * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
+         */
         connectedCallback() {
             // 子要素をすべて削除
             this.textContent = null;
@@ -397,19 +408,6 @@ async function run() {
                         li.appendChild(a);
                         dropdown.appendChild(li);
                     }
-                    // {
-                    //     const li = document.createElement('li');
-                    //     const label = document.createElement('label');
-                    //     label.innerHTML =
-                    //         '<input type="checkbox"/>\n' +
-                    //         '<span><i class="material-icons">view_module</i>Thumbnail View</span>';
-                    //     const input = label.querySelector('input');
-                    //     input.onclick = () => {
-                    //         this.iconView.onOff();
-                    //     };
-                    //     li.appendChild(label);
-                    //     dropdown.appendChild(li);
-                    // }
 
                     navBar.appendChild(dropdown);
                 }
@@ -421,12 +419,8 @@ async function run() {
                         '<i class="material-icons">view_list</i>';
                     a.onclick = () => {
                         this.listView.onOff();
-                        if (!this.listView.classList.contains('hide')) {
-                            a.classList.add('view-available');
-                        } else {
-                            a.classList.remove('view-available');
-                        }
                     };
+                    this.listViewIcon = a;
                     li.appendChild(a);
                     ul.appendChild(li);
                 }
@@ -437,12 +431,8 @@ async function run() {
                         '<i class="material-icons">view_module</i>';
                     a.onclick = () => {
                         this.iconView.onOff();
-                        if (!this.iconView.classList.contains('hide')) {
-                            a.classList.add('view-available');
-                        } else {
-                            a.classList.remove('view-available');
-                        }
                     };
+                    this.iconViewIcon = a;
                     li.appendChild(a);
                     ul.appendChild(li);
                 }
