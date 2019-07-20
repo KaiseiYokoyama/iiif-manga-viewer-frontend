@@ -493,15 +493,15 @@ async function run() {
                         dropdown.appendChild(li);
                     }
                     {
-                        // contrast
+                        // greyscale
                         const li = document.createElement('li');
                         li.innerHTML =
                             '<div class="input-field">' +
-                            '   <i class="material-icons prefix">brightness_medium</i> ' +
+                            '   <i class="material-icons prefix">filter_b_and_w</i> ' +
                             '   <form action="#">' +
                             '       <label>Brightness</label>' +
                             '       <p class="range-field">' +
-                            '           <input type="range" value="100" min="0" max="200" />' +
+                            '           <input type="range" value="0" min="0" max="100" />' +
                             '       </p>' +
                             '   </form>' +
                             '</div>';
