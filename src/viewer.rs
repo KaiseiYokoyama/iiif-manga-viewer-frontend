@@ -301,6 +301,7 @@ impl ViewerImage {
     /// 読み込む
     pub fn load(&mut self) {
         let image = HtmlImageElement::new().unwrap();
+        image.set_cross_origin(Some("Anonymous"));
         image.set_src(&self.src);
         self.image = Some(image);
     }
