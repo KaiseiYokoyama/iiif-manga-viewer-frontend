@@ -9,6 +9,8 @@ import init, {
 async function run() {
     await init();
 
+    let viewerCounter = 0;
+
     /**
      * ビューアのIconViewのicon要素
      */
@@ -308,7 +310,7 @@ async function run() {
         constructor() {
             console.log('constructor');
             super();
-            this.initialize();
+            // this.initialize();
         }
 
         /**
@@ -317,9 +319,8 @@ async function run() {
          * 一般に、この時点まで作業を遅らせるようにする必要があります。
          * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
          */
-        connectedCallback() {
-            console.log('connectedCallBack');
-        }
+        // connectedCallback() {
+        // }
 
         /**
          * 要素が DOM から削除されるたびに呼び出されます。
@@ -327,14 +328,11 @@ async function run() {
          * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
          */
         disconnectedCallback() {
-            console.log('disconnectedCallback');
             // メモリ開放
-            // this.viewer.free();
-            // this.listView = undefined;
+            this.viewer.free();
         }
 
         static get observedAttributes() {
-            console.log('observedAttributes');
             return ['manifest'];
         }
 
@@ -348,11 +346,9 @@ async function run() {
          * @param newValue
          */
         attributeChangedCallback(name, oldValue, newValue) {
-            console.log('attributeChangedcallback');
-            // this.initialize();
         }
 
-        initialize() {
+        connectedCallback() {
             // 子要素をすべて削除
             this.textContent = null;
 
@@ -362,6 +358,112 @@ async function run() {
             // canvasを設定
             const canvas = document.createElement('canvas');
             this.appendChild(canvas);
+
+            // navbar
+            let trigger, dropdownUl;
+            const navBar = document.createElement('nav');
+            {
+                const navWrapper = document.createElement('div');
+                navWrapper.classList.add('nav-wrapper');
+
+                const ul = document.createElement('ul');
+                ul.classList.add('left', 'toolbar-icons');
+                {
+                    const id = 'views-dropdown' + viewerCounter;
+                    viewerCounter++;
+
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    trigger = a;
+                    a.classList.add('dropdown-trigger');
+                    a.setAttribute('data-target', id);
+                    a.innerHTML = '<i class="material-icons">menu</i>';
+                    li.appendChild(a);
+                    ul.appendChild(li);
+
+                    const dropdown = document.createElement('ul');
+                    dropdownUl = dropdown;
+                    dropdown.classList.add('dropdown-content');
+                    dropdown.id = id;
+                    // {
+                    //     const li = document.createElement('li');
+                    //     const p = document.createElement('p');
+                    //     const label = document.createElement('label');
+                    //     label.innerHTML =
+                    //         '<input type="checkbox" checked/>\n' +
+                    //         '<span><i class="material-icons">view_list</i>List View</span>';
+                    //     const input = label.querySelector('input');
+                    //     input.onclick = () => {
+                    //         this.listView.onOff();
+                    //     };
+                    //     p.appendChild(label);
+                    //     li.appendChild(p);
+                    //     dropdown.appendChild(li);
+                    // }
+                    // {
+                    //     const li = document.createElement('li');
+                    //     const label = document.createElement('label');
+                    //     label.innerHTML =
+                    //         '<input type="checkbox"/>\n' +
+                    //         '<span><i class="material-icons">view_module</i>Thumbnail View</span>';
+                    //     const input = label.querySelector('input');
+                    //     input.onclick = () => {
+                    //         this.iconView.onOff();
+                    //     };
+                    //     li.appendChild(label);
+                    //     dropdown.appendChild(li);
+                    // }
+
+                    navBar.appendChild(dropdown);
+                }
+                {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.classList.add('view-available');
+                    a.innerHTML =
+                        '<i class="material-icons">view_list</i>';
+                    a.onclick = () => {
+                        this.listView.onOff();
+                        if (!this.listView.classList.contains('hide')) {
+                            a.classList.add('view-available');
+                        } else {
+                            a.classList.remove('view-available');
+                        }
+                    };
+                    li.appendChild(a);
+                    ul.appendChild(li);
+                }
+                {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.innerHTML =
+                        '<i class="material-icons">view_module</i>';
+                    a.onclick = () => {
+                        this.iconView.onOff();
+                        if (!this.iconView.classList.contains('hide')) {
+                            a.classList.add('view-available');
+                        } else {
+                            a.classList.remove('view-available');
+                        }
+                    };
+                    li.appendChild(a);
+                    ul.appendChild(li);
+                }
+                navWrapper.appendChild(ul);
+
+                const label = document.createElement('span');
+                this.label = label;
+                navWrapper.appendChild(label);
+
+                navBar.appendChild(navWrapper);
+            }
+            this.appendChild(navBar);
+
+            M.Dropdown.init(trigger, {
+                constrainWidth: false,
+                coverTrigger: false,
+                closeOnClick: false,
+            });
 
             // viewsを設定
             const views = document.createElement('view-s');
@@ -378,13 +480,8 @@ async function run() {
             this.iconView = iconView;
             views.appendChild(iconView);
 
-            // searchViewを設定
-            // const searchView = document.createElement('search-view');
-            // this.searchView = searchView;
-            // views.appendChild(searchView);
 
             // viewerを設定
-            // this.viewer = new Viewer(canvas, listView, iconView, searchView);
             this.viewer = new Viewer(canvas, listView, iconView);
             {
                 canvas.onmousedown = (event) => {
@@ -411,190 +508,35 @@ async function run() {
 
             const manifestURL = this.getAttribute('manifest');
             if (manifestURL) {
-                {
-                    fetch(manifestURL).then((response) => {
-                        return response.text();
-                    }).then((text) => {
-                        if (!this.viewer.set_manifest(text)) {
-                            // manifestの読み取りに失敗すると消える
-                            this.remove();
+                fetch(manifestURL).then((response) => {
+                    return response.text();
+                }).then((text) => {
+                    if (!this.viewer.set_manifest(text)) {
+                        // manifestの読み取りに失敗すると消える
+                        this.remove();
+                    }
+
+                    // navigationを設定
+                    this.label.innerHTML = this.viewer.label();
+
+                    this.show(0);
+
+                    // 裏でloadを実行
+                    let load = () => {
+                        for (let i = 0; i < this.viewer.size(); i++) {
+                            if (!this.viewer.is_loading(i)) {
+                                this.viewer.load(i);
+                            }
+                            // loadが完了したらimageListの状態を変える
+                            const image = this.viewer.get_image_elem(i);
+                            const item = this.listView.getChild(i);
+                            image.addEventListener('load', () => {
+                                item.loaded();
+                            });
                         }
-
-                        console.log("initialize(): " + this.viewer.label());
-
-                        this.show(0);
-
-                        // FAB(Floating Action Button)追加
-                        const fabs = document.createElement('div');
-                        fabs.classList.add('fixed-action-btn');
-                        {
-                            const mainFAB = document.createElement('a');
-                            mainFAB.classList.add("btn-floating", "btn-large");
-                            {
-                                const i = document.createElement('i');
-                                i.classList.add("large", "material-icons");
-                                i.innerHTML = 'menu';
-                                mainFAB.appendChild(i);
-                            }
-                            fabs.appendChild(mainFAB);
-
-                            const subFABS = document.createElement('ul');
-                            {
-                                {
-                                    const li = document.createElement('li');
-                                    {
-                                        const subFAB = document.createElement('a');
-                                        subFAB.classList.add("btn-floating");
-                                        {
-                                            const i = document.createElement('i');
-                                            i.classList.add("material-icons");
-                                            i.innerHTML = 'view_list';
-                                            subFAB.appendChild(i);
-                                        }
-                                        subFAB.onclick = () => this.listView.onOff();
-                                        li.appendChild(subFAB);
-                                    }
-                                    subFABS.appendChild(li);
-                                }
-                                {
-                                    const li = document.createElement('li');
-                                    {
-                                        const subFAB = document.createElement('a');
-                                        subFAB.classList.add("btn-floating");
-                                        {
-                                            const i = document.createElement('i');
-                                            i.classList.add("material-icons");
-                                            i.innerHTML = 'view_module';
-                                            subFAB.appendChild(i);
-                                        }
-                                        subFAB.onclick = () => this.iconView.onOff();
-                                        li.appendChild(subFAB);
-                                    }
-                                    subFABS.appendChild(li);
-                                }
-                                // {
-                                //     const li = document.createElement('li');
-                                //     {
-                                //         const subFAB = document.createElement('a');
-                                //         subFAB.classList.add("btn-floating");
-                                //         {
-                                //             const i = document.createElement('i');
-                                //             i.classList.add("material-icons");
-                                //             i.innerHTML = 'search';
-                                //             subFAB.appendChild(i);
-                                //         }
-                                //         subFAB.onclick = () => this.searchView.onOff();
-                                //         li.appendChild(subFAB);
-                                //     }
-                                //     subFABS.appendChild(li);
-                                // }
-                            }
-                            fabs.appendChild(subFABS);
-                        }
-                        this.appendChild(fabs);
-                        M.FloatingActionButton.init(fabs, {hoverEnabled: false});
-
-                        // 裏でloadを実行
-                        let load = () => {
-                            for (let i = 0; i < this.viewer.size(); i++) {
-                                if (!this.viewer.is_loading(i)) {
-                                    this.viewer.load(i);
-                                }
-                                // loadが完了したらimageListの状態を変える
-                                const image = this.viewer.get_image_elem(i);
-                                const item = this.listView.getChild(i);
-                                image.addEventListener('load', () => {
-                                    item.loaded();
-                                });
-                            }
-                        };
-                        new Thread(load()).execute();
-                    });
-                    const xhr = new XMLHttpRequest();
-                    xhr.open('GET', manifestURL);
-                    xhr.onload = () => {
-                        let manifest = xhr.responseText;
-                        if (!this.viewer.set_manifest(manifest)) {
-                            // manifestの読み取りに失敗すると消える
-                            this.remove();
-                        }
-
-                        console.log("initialize(): " + this.viewer.label());
-
-                        this.show(0);
-
-                        // FAB(Floating Action Button)追加
-                        const fabs = document.createElement('div');
-                        fabs.classList.add('fixed-action-btn');
-                        {
-                            const mainFAB = document.createElement('a');
-                            mainFAB.classList.add("btn-floating", "btn-large");
-                            {
-                                const i = document.createElement('i');
-                                i.classList.add("large", "material-icons");
-                                i.innerHTML = 'menu';
-                                mainFAB.appendChild(i);
-                            }
-                            fabs.appendChild(mainFAB);
-
-                            const subFABS = document.createElement('ul');
-                            {
-                                {
-                                    const li = document.createElement('li');
-                                    {
-                                        const subFAB = document.createElement('a');
-                                        subFAB.classList.add("btn-floating");
-                                        {
-                                            const i = document.createElement('i');
-                                            i.classList.add("material-icons");
-                                            i.innerHTML = 'view_list';
-                                            subFAB.appendChild(i);
-                                        }
-                                        subFAB.onclick = () => this.listView.onOff();
-                                        li.appendChild(subFAB);
-                                    }
-                                    subFABS.appendChild(li);
-                                }
-                                {
-                                    const li = document.createElement('li');
-                                    {
-                                        const subFAB = document.createElement('a');
-                                        subFAB.classList.add("btn-floating");
-                                        {
-                                            const i = document.createElement('i');
-                                            i.classList.add("material-icons");
-                                            i.innerHTML = 'view_module';
-                                            subFAB.appendChild(i);
-                                        }
-                                        subFAB.onclick = () => this.iconView.onOff();
-                                        li.appendChild(subFAB);
-                                    }
-                                    subFABS.appendChild(li);
-                                }
-                            }
-                            fabs.appendChild(subFABS);
-                        }
-                        this.appendChild(fabs);
-                        M.FloatingActionButton.init(fabs, {hoverEnabled: false});
-
-                        // 裏でloadを実行
-                        let load = () => {
-                            for (let i = 0; i < this.viewer.size(); i++) {
-                                if (!this.viewer.is_loading(i)) {
-                                    this.viewer.load(i);
-                                }
-                                // loadが完了したらimageListの状態を変える
-                                const image = this.viewer.get_image_elem(i);
-                                const item = this.listView.getChild(i);
-                                image.addEventListener('load', () => {
-                                    item.loaded();
-                                });
-                            }
-                        };
-                        new Thread(load()).execute();
                     };
-                    // xhr.send();
-                }
+                    new Thread(load()).execute();
+                });
             }
         }
 
@@ -635,8 +577,6 @@ async function run() {
         prev() {
             this.show(this.viewer.index - 1);
         };
-
-
     }
 
     customElements.define("iiif-manga-viewer", IIIFMangaViewer, {extends: "div"});
@@ -957,7 +897,7 @@ async function run() {
                 fab.onclick = (event) => {
                     const viewers = document.getElementById('viewers');
                     let viewer = document.createElement('div');
-                    viewer.innerHTML = '<div is="iiif-manga-viewer" manifest="'+this.result.url()+'"></div>';
+                    viewer.innerHTML = '<div is="iiif-manga-viewer" manifest="' + this.result.url() + '"></div>';
                     viewer = viewer.firstElementChild;
                     viewers.appendChild(viewer);
                 }

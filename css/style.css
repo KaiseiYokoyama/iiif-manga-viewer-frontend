@@ -14,26 +14,26 @@ body nav .nav-wrapper .nav-menu {
   right: 0;
 }
 
-div.contents {
+div#contents {
   width: 100vw;
   height: 100vh;
   max-height: calc(100vh - 64px);
 }
-div.contents div#viewers {
+div#contents div#viewers {
   width: 100%;
   height: 100%;
   display: flex;
 }
-div.contents viewer-s {
+div#contents viewer-s {
   width: 100%;
   height: 100%;
   display: flex;
 }
-div.contents .modal {
+div#contents .modal {
   width: 70%;
   max-height: 90%;
 }
-div.contents search-modal {
+div#contents search-modal {
   background-color: #e0e0e0;
   display: flex;
   flex-direction: column;
@@ -41,56 +41,56 @@ div.contents search-modal {
   justify-content: center;
   min-width: 600px;
 }
-div.contents search-modal search-bar {
+div#contents search-modal search-bar {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: right;
   max-width: max(80%, 700px);
 }
-div.contents search-modal search-bar > * {
+div#contents search-modal search-bar > * {
   width: 100%;
 }
-div.contents search-modal search-bar .card-content {
+div#contents search-modal search-bar .card-content {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: right;
 }
-div.contents search-modal search-bar .card-content > * {
+div#contents search-modal search-bar .card-content > * {
   width: 100%;
 }
-div.contents search-modal search-bar .card-content > .input-field {
+div#contents search-modal search-bar .card-content > .input-field {
   flex: 1 1;
   margin-bottom: 0;
 }
-div.contents search-modal search-bar .card-content > .dropdown {
+div#contents search-modal search-bar .card-content > .dropdown {
   padding-left: 20%;
   flex-basis: 100%;
 }
-div.contents search-modal search-bar .card-content > .dropdown > .rows-wrapper.input-field {
+div#contents search-modal search-bar .card-content > .dropdown > .rows-wrapper.input-field {
   display: flex;
 }
-div.contents search-modal search-bar .card-content > .dropdown > .rows-wrapper.input-field > i {
+div#contents search-modal search-bar .card-content > .dropdown > .rows-wrapper.input-field > i {
   flex: 0 0;
 }
-div.contents search-modal search-bar .card-content > .dropdown > .rows-wrapper.input-field > form {
+div#contents search-modal search-bar .card-content > .dropdown > .rows-wrapper.input-field > form {
   margin-left: 3rem;
   flex: 1 1;
 }
-div.contents search-modal .cards {
+div#contents search-modal .cards {
   display: flex;
 }
-div.contents search-modal .cards .card {
+div#contents search-modal .cards .card {
   width: 30%;
   margin: 2%;
 }
-div.contents search-modal .cards .card .card-image img {
+div#contents search-modal .cards .card .card-image img {
   background-color: #bababa;
   height: 200px;
   object-fit: contain;
 }
-div.contents search-modal .cards .card .card-content {
+div#contents search-modal .cards .card .card-content {
   height: 200px;
   text-overflow: ellipsis;
   overflow: hidden;

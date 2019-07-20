@@ -6,7 +6,7 @@ i {
   font-style: normal;
 }
 
-div[is="iiif-manga-viewer"] {
+div[is="iiif-manga-viewer"].card {
   position: relative;
   flex: 1 1;
   max-width: 100vw;
@@ -14,6 +14,60 @@ div[is="iiif-manga-viewer"] {
 
   margin-right: 5px;
   margin-left: 5px;
+
+  margin-top: calc(0.5rem + 40px);
+
+  > nav {
+    position: absolute;
+    top: -40px;
+    background-color: $secondary-color;
+    color: white;
+
+    z-index: 100;
+
+    height: 40px;
+    line-height: 40px;
+
+    .brand-logo {
+      color: white;
+    }
+
+    a {
+      color: white;
+    }
+
+    .toolbar-icons {
+      a.view-available {
+        background-color: rgba(0,0,0,0.2);
+      }
+    }
+
+    i {
+      height: 40px;
+      line-height: 40px;
+      color: inherit;
+    }
+
+    .left {
+      position: absolute;
+      left: 0;
+    }
+
+    .right {
+      position: absolute;
+      right: 0;
+    }
+
+    .dropdown-content {
+      li {
+        span {
+          i {
+            line-height: inherit;
+          }
+        }
+      }
+    }
+  }
 
   canvas {
     display: block;
@@ -35,7 +89,7 @@ div[is="iiif-manga-viewer"] {
 
     display: flex;
 
-    background-color: rgba(256,256,256,0.87);
+    background-color: rgba(256, 256, 256, 0.87);
 
     ul.image-list {
       //height: 100%;
@@ -47,6 +101,8 @@ div[is="iiif-manga-viewer"] {
 
       cursor: pointer;
 
+      border: none;
+
       &::-webkit-scrollbar {
         display: none;
       }
@@ -57,7 +113,7 @@ div[is="iiif-manga-viewer"] {
 
       li.image-list-item {
         &:hover {
-          background-color: rgba(0,0,0,0.2);
+          background-color: rgba(0, 0, 0, 0.2);
         }
 
         i.status-icon:after {
