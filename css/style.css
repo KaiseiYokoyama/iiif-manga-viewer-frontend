@@ -95,6 +95,12 @@ div#contents search-modal .cards .card .card-content {
   text-overflow: ellipsis;
   overflow: hidden;
 }
+div#contents open-modal {
+  overflow-x: hidden;
+}
+div#contents open-modal .card-content {
+  overflow-x: hidden;
+}
 
 .fontsize-inherit {
   font-size: inherit !important;

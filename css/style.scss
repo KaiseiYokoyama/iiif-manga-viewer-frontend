@@ -128,6 +128,13 @@ div#contents {
       }
     }
   }
+
+  open-modal {
+    overflow-x: hidden;
+    .card-content {
+      overflow-x: hidden;
+    }
+  }
 }
 
 .fontsize-inherit {

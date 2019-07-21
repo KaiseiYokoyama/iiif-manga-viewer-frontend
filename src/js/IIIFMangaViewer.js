@@ -6,6 +6,14 @@ import init, {
     SearchResults
 } from '../../pkg/iiif_manga_viewer_frontend.js';
 
+let open = (url) => {
+    const viewers = document.getElementById('viewers');
+    let viewer = document.createElement('div');
+    viewer.innerHTML = '<div is="iiif-manga-viewer" manifest="' + url + '"></div>';
+    viewer = viewer.firstElementChild;
+    viewers.appendChild(viewer);
+};
+
 async function run() {
     await init();
 
@@ -1121,6 +1129,63 @@ async function run() {
     }
 
     customElements.define("search-modal", SearchModal);
+
+    /**
+     * urlからManifestを開くmodal
+     */
+    class OpenModal extends HTMLElement {
+        constructor() {
+            super();
+        }
+
+        /**
+         * 要素が DOM に挿入されるたびに呼び出されます。
+         * リソースの取得やレンダリングなどの、セットアップ コードの実行に役立ちます。
+         * 一般に、この時点まで作業を遅らせるようにする必要があります。
+         * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
+         */
+        connectedCallback() {
+            this.classList.add('modal');
+            M.Modal.init(this, {});
+
+            // content
+            const content = document.createElement('div');
+            content.classList.add('modal-content');
+            this.content = content;
+            super.appendChild(content);
+
+            // title
+            const title = document.createElement('h3');
+            title.innerHTML =
+                '<i class="material-icons left fontsize-inherit">open_in_browser</i>Open Manifest';
+            this.appendChild(title);
+
+            // url input
+            const urlInput = document.createElement('div');
+            urlInput.classList.add('input-field');
+            urlInput.innerHTML =
+                '<i class="material-icons prefix">open_in_browser</i>' +
+                '<input id="url_input" type="url" class="validate">' +
+                '<label for="url_input">URL</label>';
+            this.appendChild(urlInput);
+
+            const input = urlInput.querySelector('input');
+            input.onkeypress = (event) => {
+                switch (event.key) {
+                    case 'Enter':
+                        open(input.value);
+                        M.Modal.getInstance(this).close();
+                        break;
+                }
+            }
+        }
+
+        appendChild(newChild) {
+            this.content.appendChild(newChild);
+        }
+    }
+
+    customElements.define('open-modal', OpenModal);
 }
 
 run();
