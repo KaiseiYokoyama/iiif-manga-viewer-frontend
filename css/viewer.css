@@ -26,7 +26,7 @@ div[is=iiif-manga-viewer].card > nav .brand-logo {
 div[is=iiif-manga-viewer].card > nav a {
   color: white;
 }
-div[is=iiif-manga-viewer].card > nav .toolbar-icons a.view-available {
+div[is=iiif-manga-viewer].card > nav .toolbar-icons a.available {
   background-color: rgba(0, 0, 0, 0.2);
 }
 div[is=iiif-manga-viewer].card > nav i {

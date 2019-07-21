@@ -116,9 +116,9 @@ async function run() {
 
             const a = this.mangaViewer.iconViewIcon;
             if (!this.classList.contains('hide')) {
-                a.classList.add('view-available');
+                a.classList.add('available');
             } else {
-                a.classList.remove('view-available');
+                a.classList.remove('available');
             }
         }
 
@@ -231,9 +231,9 @@ async function run() {
 
             const a = this.mangaViewer.listViewIcon;
             if (!this.classList.contains('hide')) {
-                a.classList.add('view-available');
+                a.classList.add('available');
             } else {
-                a.classList.remove('view-available');
+                a.classList.remove('available');
             }
         }
 
@@ -421,7 +421,7 @@ async function run() {
                 {
                     const li = document.createElement('li');
                     const a = document.createElement('a');
-                    a.classList.add('view-available');
+                    a.classList.add('available');
                     a.innerHTML =
                         '<i class="material-icons">view_list</i>';
                     a.onclick = () => {
@@ -451,6 +451,18 @@ async function run() {
 
                 const ulR = document.createElement('ul');
                 ulR.classList.add('right', 'toolbar-icons');
+                {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.innerHTML =
+                        '<i class="material-icons">crop</i>';
+                    this.croppingIcon = a;
+                    a.onclick = () => {
+                        this.cropping();
+                    };
+                    li.appendChild(a);
+                    ulR.appendChild(li);
+                }
                 {
                     const li = document.createElement('li');
                     const a = document.createElement('a');
@@ -653,13 +665,22 @@ async function run() {
             this.viewer = new Viewer(canvas, listView, iconView);
             {
                 canvas.onmousedown = (event) => {
-                    this.viewer.mousedown(event);
+                    if (this.oncrop) {
+                    } else {
+                        this.viewer.mousedown(event);
+                    }
                 };
                 canvas.onmousemove = (event) => {
-                    this.viewer.mousemove(event);
+                    if (this.oncrop) {
+                    } else {
+                        this.viewer.mousemove(event);
+                    }
                 };
                 canvas.onmouseup = (event) => {
-                    this.viewer.mouseup(event);
+                    if (this.oncrop) {
+                    } else {
+                        this.viewer.mouseup(event);
+                    }
                 };
                 canvas.onclick = (event) => {
                     let direction = this.viewer.click(event);
@@ -706,6 +727,15 @@ async function run() {
                     new Thread(load()).execute();
                 });
             }
+        }
+
+        cropping() {
+            if (this.oncrop) {
+                this.oncrop = false;
+            } else {
+                this.oncrop = true;
+            }
+            this.croppingIcon.classList.toggle('available');
         }
 
         progress() {
