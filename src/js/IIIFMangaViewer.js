@@ -294,6 +294,45 @@ async function run() {
     customElements.define("image-list", ListView, {extends: "ul"});
 
     /**
+     * ビューアのCanvas
+     */
+    class ViewerCanvas extends HTMLElement {
+        /**
+         * 要素が DOM に挿入されるたびに呼び出されます。
+         * リソースの取得やレンダリングなどの、セットアップ コードの実行に役立ちます。
+         * 一般に、この時点まで作業を遅らせるようにする必要があります。
+         * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
+         */
+        connectedCallback() {
+
+        }
+
+        getImage() {
+            return this.image;
+        }
+
+        appendChild(newChild) {
+            if (newChild instanceof HTMLImageElement) {
+                if (this.image) this.image.remove();
+
+                newChild.addEventListener('mousedown', (event) => {
+                    event.preventDefault();
+                });
+                newChild.addEventListener('mousemove', (event) => {
+                    event.preventDefault();
+                });
+                newChild.addEventListener('mouseup', (event) => {
+                    event.preventDefault();
+                });
+                this.image = newChild;
+                super.appendChild(newChild);
+            }
+        }
+    }
+
+    customElements.define('viewer-canvas', ViewerCanvas);
+
+    /**
      * Viewをまとめて配置するelement
      */
     class Views extends HTMLElement {
@@ -376,8 +415,11 @@ async function run() {
             this.classList.add('card');
 
             // canvasを設定
-            const canvas = document.createElement('canvas');
-            this.appendChild(canvas);
+            // const canvas = document.createElement('canvas');
+            // this.appendChild(canvas);
+            const viewerCanvas = document.createElement('viewer-canvas');
+            this.viewerCanvas = viewerCanvas;
+            this.appendChild(viewerCanvas);
 
             // navbar
             let viewDropdownTrigger, filterDropdownTrigger, filterDropdown;
@@ -489,7 +531,7 @@ async function run() {
 
                         const link = document.createElement('a');
                         link.style.display = 'none';
-                        const base64 = canvas.toDataURL('image/png').split(',')[1];
+                        const base64 = viewerCanvas.toDataURL('image/png').split(',')[1];
                         link.href = window.URL.createObjectURL(base64ToBlob(base64));
                         link.download = this.viewer.label() + ' ' + this.viewer.index + '.png';
                         document.body.appendChild(link);
@@ -519,7 +561,7 @@ async function run() {
                     dropdown.classList.add('dropdown-content', 'filter-dropdown');
                     let brightness, contrast, gradient, greyscale, invert;
                     let onchange = () => {
-                        canvas.style.filter =
+                        viewerCanvas.style.filter =
                             'brightness(' + brightness.value + '%) ' +
                             'contrast(' + contrast.value + '%) ' +
                             'grayscale(' + greyscale.value + '%) ' +
@@ -662,37 +704,32 @@ async function run() {
 
 
             // viewerを設定
-            this.viewer = new Viewer(canvas, listView, iconView);
+            this.viewer = new Viewer(viewerCanvas, listView, iconView);
             {
-                canvas.onmousedown = (event) => {
+                viewerCanvas.onmousedown = (event) => {
                     if (this.oncrop) {
                     } else {
-                        this.viewer.mousedown(event);
+                        this.viewer.move_mousedown(event);
                     }
                 };
-                canvas.onmousemove = (event) => {
+                viewerCanvas.addEventListener('mousemove', (event) => {
                     if (this.oncrop) {
                     } else {
-                        this.viewer.mousemove(event);
+                        let position = this.viewer.move_mousemove(event);
+                        if (position) {
+                            // console.log(position.x + ',' + position.y);
+                            this.move(position.x, position.y);
+                            position.free();
+                        }
                     }
-                };
-                canvas.onmouseup = (event) => {
+                });
+                viewerCanvas.addEventListener('mouseup', (event) => {
                     if (this.oncrop) {
                     } else {
-                        this.viewer.mouseup(event);
+                        console.log('mouseup');
+                        this.viewer.move_mouseup();
                     }
-                };
-                canvas.onclick = (event) => {
-                    let direction = this.viewer.click(event);
-                    switch (direction) {
-                        case Direction.Left:
-                            this.next();
-                            break;
-                        case Direction.Right:
-                            this.prev();
-                            break;
-                    }
-                };
+                });
             }
 
             const manifestURL = this.getAttribute('manifest');
@@ -771,6 +808,12 @@ async function run() {
         prev() {
             this.show(this.viewer.index - 1);
         };
+
+        // 表示中のイメージを動かす
+        move(newX, newY) {
+            let image = this.viewerCanvas.getImage();
+            image.style.transform = 'translate(' + newX + 'px,' + newY + 'px)';
+        }
     }
 
     customElements.define("iiif-manga-viewer", IIIFMangaViewer, {extends: "div"});

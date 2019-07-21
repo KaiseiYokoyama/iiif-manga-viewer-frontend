@@ -59,31 +59,49 @@ impl Viewer {
         true
     }
 
+//    #[wasm_bindgen]
+//    /// イメージを表示する
+//    pub fn show(&mut self, index: usize) -> bool {
+//        let context = self.context();
+//        let canvas = self.canvas();
+//        if let Some(image) = self.images.get_mut(index) {
+//            if !image.loading() {
+//                image.load();
+//                return false;
+//            }
+//            if let Some(img) = &image.image {
+////                log(&format!("show: {}", index));
+//                self.index = index;
+//                // prepare to show
+//                let width = img.width();
+//                let height = img.height();
+//                canvas.set_width(width);
+//                canvas.set_height(height);
+//
+//                context.draw_image_with_html_image_element(img, image.position_x, image.position_y);
+//                return true;
+//            }
+//            return false;
+//        }
+//        return true;
+//    }
+
     #[wasm_bindgen]
     /// イメージを表示する
     pub fn show(&mut self, index: usize) -> bool {
-        let context = self.context();
-        let canvas = self.canvas();
         if let Some(image) = self.images.get_mut(index) {
             if !image.loading() {
                 image.load();
                 return false;
             }
             if let Some(img) = &image.image {
-//                log(&format!("show: {}", index));
                 self.index = index;
-                // prepare to show
-                let width = img.width();
-                let height = img.height();
-                canvas.set_width(width);
-                canvas.set_height(height);
-
-                context.draw_image_with_html_image_element(img, image.position_x, image.position_y);
+                self.canvas.element.append_child(&Node::from(Element::from(img.clone())));
                 return true;
             }
             return false;
         }
-        return true;
+        true
     }
 
     #[wasm_bindgen]
@@ -114,42 +132,43 @@ impl Viewer {
     }
 
     /// onclickイベント
-    #[wasm_bindgen]
-    pub fn click(&mut self, event: MouseEvent) -> Direction {
-        let offset_width = self.canvas().offset_width();
-        let x = event.page_x()
-            - self.canvas_elem().get_bounding_client_rect().left() as i32
-            - web_sys::window().unwrap().page_x_offset().unwrap_or(0.0) as i32;
-        Direction::from(offset_width, x)
-    }
+//    #[wasm_bindgen]
+//    pub fn click(&mut self, event: MouseEvent) -> Direction {
+//        let offset_width = self.canvas().offset_width();
+//        let x = event.page_x()
+//            - self.canvas_elem().get_bounding_client_rect().left() as i32
+//            - web_sys::window().unwrap().page_x_offset().unwrap_or(0.0) as i32;
+//        Direction::from(offset_width, x)
+//    }
 
     /// mousedownイベント
     #[wasm_bindgen]
-    pub fn mousedown(&mut self, event: MouseEvent) {
-        log(&format!("event: X{} Y{}", event.offset_x(), event.offset_y()));
-        self.canvas.mousedown = Some((event.offset_x() as f64, event.offset_y() as f64));
+    pub fn move_mousedown(&mut self, event: MouseEvent) {
+        self.canvas.mousedown = Some((event.client_x() as f64, event.client_y() as f64));
     }
 
     /// mousemoveイベント
     #[wasm_bindgen]
-    pub fn mousemove(&mut self, event: MouseEvent) {
+    pub fn move_mousemove(&mut self, event: MouseEvent) -> Option<Position> {
         if let Some((origin_x, origin_y)) = self.canvas.mousedown.clone() {
-            log(&format!("original: X{} Y{}", origin_x, origin_y));
             if let Some(image) = self.images.get_mut(self.index) {
-                image.position_x = event.offset_x() as f64 - origin_x + image.original_x;
-                image.position_y = event.offset_y() as f64 - origin_y + image.original_y;
-                self.show(self.index);
+                log(&format!("{} - {} + {}", event.client_x() as f64, origin_x, image.original_x));
+                image.position_x = event.client_x() as f64 - origin_x + image.original_x;
+                image.position_y = event.client_y() as f64 - origin_y + image.original_y;
+                return Some(Position { x: image.position_x, y: image.position_y });
             }
         }
+        None
     }
 
     /// mouseupイベント
     #[wasm_bindgen]
-    pub fn mouseup(&mut self, event: MouseEvent) {
+    pub fn move_mouseup(&mut self) {
         if let Some(original) = &self.canvas.mousedown {
             if let Some(image) = self.images.get_mut(self.index) {
                 image.original_x = image.position_x;
                 image.original_y = image.position_y;
+                log(&format!("image.original_x = {},image.original_y = {}", image.position_x, image.position_y));
             }
         }
         self.canvas.mousedown = None;
@@ -169,15 +188,14 @@ impl Viewer {
     }
 
     /// canvasのcontextを取得する
-    fn context(&self) -> CanvasRenderingContext2d {
-        self.canvas()
-            .get_context("2d")
-            .unwrap()
-            .unwrap()
-            .dyn_into::<web_sys::CanvasRenderingContext2d>()
-            .unwrap()
-    }
-
+//    fn context(&self) -> CanvasRenderingContext2d {
+//        self.canvas()
+//            .get_context("2d")
+//            .unwrap()
+//            .unwrap()
+//            .dyn_into::<web_sys::CanvasRenderingContext2d>()
+//            .unwrap()
+//    }
     #[wasm_bindgen]
     pub fn label(&self) -> String {
         match &self.manifest {
@@ -327,4 +345,10 @@ impl Direction {
             Direction::Right
         } else { Direction::None }
     }
+}
+
+#[wasm_bindgen]
+pub struct Position {
+    pub x: f64,
+    pub y: f64,
 }
