@@ -330,7 +330,6 @@ async function run() {
      */
     class IIIFMangaViewer extends HTMLDivElement {
         constructor() {
-            console.log('constructor');
             super();
             // this.initialize();
         }
@@ -721,13 +720,9 @@ async function run() {
         }
 
         show(index) {
-            let label = this.viewer.label();
-            console.log('JS: show():' + label);
-            // this.viewer.label();
             if (!this.viewer.show(index)) {
                 let progress = this.progress();
                 let elem = this.viewer.get_image_elem(index);
-                console.log('REQUEST: this.viewer.label=' + this.viewer.label());
                 if (elem) {
                     elem.addEventListener('load', () => {
                         this.removeChild(progress);
@@ -964,9 +959,7 @@ async function run() {
             }
             // todo post query
             let json = searchQuery.json();
-            console.log(json);
             // todo remove sample
-            console.log('sample output');
             // サンプル出力
             let sample = new SearchResult("https://www.dl.ndl.go.jp/api/iiif/2542527/manifest.json",
                 "会津日新館細江図",
