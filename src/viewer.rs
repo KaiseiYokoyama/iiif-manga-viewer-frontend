@@ -152,7 +152,6 @@ impl Viewer {
     pub fn move_mousemove(&mut self, event: MouseEvent) -> Option<Position> {
         if let Some((origin_x, origin_y)) = self.canvas.mousedown.clone() {
             if let Some(image) = self.images.get_mut(self.index) {
-                log(&format!("{} - {} + {}", event.client_x() as f64, origin_x, image.original_x));
                 image.position_x = event.client_x() as f64 - origin_x + image.original_x;
                 image.position_y = event.client_y() as f64 - origin_y + image.original_y;
                 return Some(Position { x: image.position_x, y: image.position_y });
@@ -168,7 +167,6 @@ impl Viewer {
             if let Some(image) = self.images.get_mut(self.index) {
                 image.original_x = image.position_x;
                 image.original_y = image.position_y;
-                log(&format!("image.original_x = {},image.original_y = {}", image.position_x, image.position_y));
             }
         }
         self.canvas.mousedown = None;

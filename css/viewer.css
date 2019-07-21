@@ -105,6 +105,11 @@ div[is=iiif-manga-viewer].card viewer-canvas img {
   max-height: 100%;
   max-width: 100%;
 }
+div[is=iiif-manga-viewer].card viewer-canvas .area {
+  position: absolute;
+  background-color: rgba(92, 107, 192, 0.3);
+  z-index: 100;
+}
 div[is=iiif-manga-viewer].card view-s {
   height: 100%;
   position: absolute;

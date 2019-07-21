@@ -1,3 +1,5 @@
+"use strict";
+
 import init, {
     Viewer,
     Direction,
@@ -304,11 +306,57 @@ async function run() {
          * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
          */
         connectedCallback() {
-
+            this.area = document.createElement('div');
+            this.area.classList.add('area', 'hide');
+            super.appendChild(this.area);
         }
 
         getImage() {
             return this.image;
+        }
+
+        cropStart = (event) => {
+            if (event.target !== this.image) return;
+            this.area.classList.remove('hide');
+
+            this.cropOrigin = event;
+            this.area.style.top = event.offsetY + this.image.offsetTop + 'px';
+            this.area.style.bottom = event.offsetY + this.image.offsetTop + 'px';
+            this.area.style.left = event.offsetX + this.image.offsetLeft + 'px';
+            this.area.style.right = event.offsetX + this.image.offsetLeft + 'px';
+        };
+
+        cropping = (event) => {
+            if (event.target !== this.image || !this.cropOrigin) return;
+
+            let origin = this.cropOrigin;
+            let top, bottom, left, right;
+            if (origin.offsetX < event.offsetX) {
+                left = origin.offsetX;
+                right = event.offsetX;
+            } else {
+                right = origin.offsetX;
+                left = event.offsetX;
+            }
+            if (origin.offsetY < event.offsetY) {
+                top = origin.offsetY;
+                bottom = event.offsetY;
+            } else {
+                bottom = origin.offsetY;
+                top = event.offsetY;
+            }
+            this.area.style.top = top + this.image.offsetTop + 'px';
+            this.area.style.height = (bottom - top) + 'px';
+            this.area.style.left = left + this.image.offsetLeft + 'px';
+            this.area.style.width = (right - left) + 'px';
+        };
+
+        crop = (event) => {
+            if (event.target !== this.image || !this.cropOrigin) return;
+
+            this.area.classList.add('hide');
+            // finish
+            this.cropOrigin = undefined;
         }
 
         appendChild(newChild) {
@@ -706,18 +754,19 @@ async function run() {
             // viewerを設定
             this.viewer = new Viewer(viewerCanvas, listView, iconView);
             {
-                viewerCanvas.onmousedown = (event) => {
+                viewerCanvas.addEventListener('mousedown', (event) => {
                     if (this.oncrop) {
+                        this.viewerCanvas.cropStart(event);
                     } else {
                         this.viewer.move_mousedown(event);
                     }
-                };
+                });
                 viewerCanvas.addEventListener('mousemove', (event) => {
                     if (this.oncrop) {
+                        this.viewerCanvas.cropping(event);
                     } else {
                         let position = this.viewer.move_mousemove(event);
                         if (position) {
-                            // console.log(position.x + ',' + position.y);
                             this.move(position.x, position.y);
                             position.free();
                         }
@@ -725,8 +774,9 @@ async function run() {
                 });
                 viewerCanvas.addEventListener('mouseup', (event) => {
                     if (this.oncrop) {
+                        this.viewerCanvas.crop(event);
+                        this.cropping();
                     } else {
-                        console.log('mouseup');
                         this.viewer.move_mouseup();
                     }
                 });
