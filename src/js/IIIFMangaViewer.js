@@ -6,7 +6,7 @@ import init, {
     SearchQuery,
     SearchResult,
     SearchResults,
-    CollectionItem,
+    CurationItem,
 } from '../../pkg/iiif_manga_viewer_frontend.js';
 
 let open = (url) => {
@@ -369,7 +369,7 @@ async function run() {
             } else {
                 let manifestID = this.mangaViewer.getAttribute('manifest');
                 let imageID = this.image.src;
-                let item = new CollectionItem(manifestID, imageID, origin, event, this.image);
+                let item = new CurationItem(manifestID, imageID, this.mangaViewer.viewer.label() + '_' + this.mangaViewer.viewer.image_label(), origin, event, this.image);
                 console.log('' + item.json());
                 item.free();
             }

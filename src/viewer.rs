@@ -201,6 +201,14 @@ impl Viewer {
             None => "None",
         }.to_string()
     }
+
+    pub fn image_label(&self) -> String {
+        if let Some(img) = self.images.get(self.index) {
+            img.label.clone()
+        } else {
+            String::new()
+        }
+    }
 }
 
 #[wasm_bindgen]
