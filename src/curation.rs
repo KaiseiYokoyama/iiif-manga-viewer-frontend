@@ -1,13 +1,15 @@
 use wasm_bindgen::prelude::*;
 
-use crate::viewer::{Position, log};
+use crate::viewer::{Position, log, Canvas};
 use std::ops::{Range, RangeInclusive};
 
-use web_sys::{MouseEvent, HtmlImageElement};
+use web_sys::{MouseEvent, HtmlImageElement, HtmlCanvasElement, CanvasRenderingContext2d, Element, Node};
 
 #[wasm_bindgen]
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct CurationItem {
+    #[serde(skip)]
+    image: Option<HtmlImageElement>,
     /// imageを含むManifestのid
     manifest_id: String,
     /// imageのid(取得先)
@@ -18,26 +20,43 @@ pub struct CurationItem {
     crop: (RangeInclusive<u32>, RangeInclusive<u32>),
     /// 説明
     description: String,
+    pub position_x: f64,
+    pub position_y: f64,
+    pub original_x: f64,
+    pub original_y: f64,
+    pub zoom: f64,
 }
 
 #[wasm_bindgen]
 impl CurationItem {
     #[wasm_bindgen(constructor)]
     pub fn new(manifest_id: String, image_id: String, label: String, origin: MouseEvent, term: MouseEvent, img: HtmlImageElement) -> Self {
-        let zoom = (img.natural_width() / img.width()) as i32;
+        let zoom = img.natural_width() as f64 / img.width() as f64;
         let (mut xl, mut xr) =
             if origin.offset_x() < term.offset_x() {
-                (origin.offset_x() * zoom, term.offset_x() * zoom)
-            } else { (term.offset_x() * zoom, origin.offset_x() * zoom) };
+                (origin.offset_x() as f64 * zoom, term.offset_x() as f64 * zoom)
+            } else { (term.offset_x() as f64 * zoom, origin.offset_x() as f64 * zoom) };
         let (mut yt, mut yb) =
             if origin.offset_y() < term.offset_y() {
-                (origin.offset_y() * zoom, term.offset_y() * zoom)
-            } else { (term.offset_y() * zoom, origin.offset_y() * zoom) };
+                (origin.offset_y() as f64 * zoom, term.offset_y() as f64 * zoom)
+            } else { (term.offset_y() as f64 * zoom, origin.offset_y() as f64 * zoom) };
         let description = String::new();
 
         let crop = (xl as u32..=xr as u32, yt as u32..=yb as u32);
 
-        Self { manifest_id, image_id, label, crop, description }
+        Self {
+            image: None,
+            manifest_id,
+            image_id,
+            label,
+            crop,
+            description,
+            position_x: 0.0,
+            position_y: 0.0,
+            original_x: 0.0,
+            original_y: 0.0,
+            zoom: 1.0,
+        }
     }
 
     pub fn manifest_id(&self) -> String {
@@ -75,9 +94,127 @@ impl CurationItem {
     pub fn json(&self) -> Option<String> {
         serde_json::to_string(&self).ok()
     }
+
+    pub fn set_image(&mut self, image: HtmlImageElement) {
+        self.image = Some(image);
+    }
 }
 
-struct CurationViewer {
-    element: Element,
+#[wasm_bindgen]
+pub struct WasmCurationViewer {
+    canvas: Canvas,
     items: Vec<CurationItem>,
+    pub index: usize,
+}
+
+#[wasm_bindgen]
+impl WasmCurationViewer {
+    #[wasm_bindgen(constructor)]
+    pub fn new(element: Element) -> Self {
+        Self {
+            canvas: Canvas::new(element),
+            items: Vec::new(),
+            index: 0,
+        }
+    }
+
+    pub fn label(&self) -> String {
+        "Curation".to_string()
+    }
+
+    pub fn image_label(&self) -> String {
+        if let Some(img) = self.items.get(self.index) {
+            img.label.clone()
+        } else {
+            String::new()
+        }
+    }
+
+    pub fn now(&self) -> Option<CurationItem> {
+        self.items.get(self.index).cloned()
+    }
+
+    pub fn push(&mut self, item: CurationItem) {
+        self.items.push(item);
+    }
+
+    pub fn remove(&mut self, index: usize) {
+        self.items.remove(index);
+    }
+
+    #[wasm_bindgen]
+    /// イメージを表示する
+    pub fn show(&mut self, index: usize) {
+        if let Some(image) = self.items.get(index) {
+            if let Some(img) = &image.image {
+                self.index = index;
+                self.canvas.element.append_child(&Node::from(Element::from(img.clone())));
+            }
+        }
+    }
+
+    #[wasm_bindgen]
+    /// イメージをsrcから表示する
+    pub fn get_index_by_src(&mut self, src: String) -> usize {
+        let items = &self.items;
+        let mut index = self.index;
+
+        for i in 0..items.len() {
+            let image = &items[i].image_id;
+            if image == &src {
+                index = i;
+                break;
+            }
+        }
+        index
+    }
+
+    #[wasm_bindgen]
+    /// 次のイメージを表示する
+    pub fn next(&mut self) {
+        self.show(self.index + 1)
+    }
+
+    #[wasm_bindgen]
+    /// 前のイメージを表示する
+    pub fn prev(&mut self) {
+        self.show(self.index - 1)
+    }
+
+    /// 最後のイメージを表示する
+    pub fn show_last(&mut self) {
+        let index = self.items.len();
+        self.show(index - 1);
+    }
+
+    /// mousedownイベント
+    #[wasm_bindgen]
+    pub fn move_mousedown(&mut self, event: MouseEvent) {
+        self.canvas.mousedown = Some((event.client_x() as f64, event.client_y() as f64));
+    }
+
+    /// mousemoveイベント
+    #[wasm_bindgen]
+    pub fn move_mousemove(&mut self, event: MouseEvent) -> Option<Position> {
+        if let Some((origin_x, origin_y)) = self.canvas.mousedown.clone() {
+            if let Some(item) = self.items.get_mut(self.index) {
+                item.position_x = event.client_x() as f64 - origin_x + item.original_x;
+                item.position_y = event.client_y() as f64 - origin_y + item.original_y;
+                return Some(Position { x: item.position_x, y: item.position_y });
+            }
+        }
+        None
+    }
+
+    /// mouseupイベント
+    #[wasm_bindgen]
+    pub fn move_mouseup(&mut self) {
+        if let Some(original) = &self.canvas.mousedown {
+            if let Some(item) = self.items.get_mut(self.index) {
+                item.original_x = item.position_x;
+                item.original_y = item.position_y;
+            }
+        }
+        self.canvas.mousedown = None;
+    }
 }

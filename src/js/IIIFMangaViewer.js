@@ -7,6 +7,7 @@ import init, {
     SearchResult,
     SearchResults,
     CurationItem,
+    WasmCurationViewer,
 } from '../../pkg/iiif_manga_viewer_frontend.js';
 
 async function run() {
@@ -298,6 +299,11 @@ async function run() {
      * ビューアのCanvas
      */
     class ViewerCanvas extends HTMLElement {
+        constructor(imageViewer) {
+            super();
+            this.imageViewer = imageViewer;
+        }
+
         /**
          * 要素が DOM に挿入されるたびに呼び出されます。
          * リソースの取得やレンダリングなどの、セットアップ コードの実行に役立ちます。
@@ -309,40 +315,40 @@ async function run() {
             this.area.classList.add('area', 'hide');
             super.appendChild(this.area);
 
-            // 自分の所属するマンガビューアを登録しておく
-            let mangaViewer = this;
-            while (!(mangaViewer instanceof IIIFMangaViewer)) {
-                mangaViewer = mangaViewer.parentElement;
-                if (!mangaViewer) return;
-            }
-            this.mangaViewer = mangaViewer;
+            // 自分の所属するビューアを登録しておく
+            // let mangaViewer = this;
+            // while (!(mangaViewer instanceof IIIFMangaViewer || mangaViewer instanceof CurationViewer)) {
+            //     mangaViewer = mangaViewer.parentElement;
+            //     if (!mangaViewer) return;
+            // }
+            // this.imageViewer = mangaViewer;
 
             // ドラッグ
             {
                 this.addEventListener('mousedown', (event) => {
-                    if (this.mangaViewer.oncrop) {
+                    if (this.imageViewer.oncrop) {
                         this.cropStart(event);
                     } else {
-                        this.mangaViewer.viewer.move_mousedown(event);
+                        this.imageViewer.viewer.move_mousedown(event);
                     }
                 });
                 this.addEventListener('mousemove', (event) => {
-                    if (this.mangaViewer.oncrop) {
+                    if (this.imageViewer.oncrop) {
                         this.cropping(event);
                     } else {
-                        let position = this.mangaViewer.viewer.move_mousemove(event);
+                        let position = this.imageViewer.viewer.move_mousemove(event);
                         if (position) {
-                            this.mangaViewer.move(position.x, position.y);
+                            this.imageViewer.move(position.x, position.y);
                             position.free();
                         }
                     }
                 });
                 this.addEventListener('mouseup', (event) => {
-                    if (this.mangaViewer.oncrop) {
+                    if (this.imageViewer.oncrop) {
                         this.crop(event);
-                        this.mangaViewer.cropping();
+                        this.imageViewer.cropping();
                     } else {
-                        this.mangaViewer.viewer.move_mouseup();
+                        this.imageViewer.viewer.move_mouseup();
                     }
                 });
             }
@@ -395,11 +401,39 @@ async function run() {
                 console.log(event.target);
                 console.log(origin);
             } else {
-                let manifestID = this.mangaViewer.getAttribute('manifest');
+                let manifestID = this.imageViewer.getAttribute('manifest');
+                if (!manifestID) {
+                    manifestID = this.imageViewer.viewer.now().manifest_id();
+                }
                 let imageID = this.image.src;
-                let item = new CurationItem(manifestID, imageID, this.mangaViewer.viewer.label() + '_' + this.mangaViewer.viewer.image_label(), origin, event, this.image);
+                let item = new CurationItem(manifestID, imageID, this.imageViewer.viewer.label() + '_' + this.imageViewer.viewer.image_label(), origin, event, this.image);
                 console.log('' + item.json());
-                item.free();
+                // crop image
+                {
+                    let canvas = document.createElement('canvas');
+                    let [sx, sy, sw, sh, dx, dy, dw, dh] =
+                        [
+                            item.get_x_start(),
+                            item.get_y_start(),
+                            item.get_x_end() - item.get_x_start(),
+                            item.get_y_end() - item.get_y_start(),
+                            0,
+                            0,
+                            item.get_x_end() - item.get_x_start(),
+                            item.get_y_end() - item.get_y_start()
+                        ];
+                    canvas.width = dw;
+                    canvas.height = dh;
+                    canvas.getContext('2d').drawImage(this.image, sx, sy, sw, sh, dx, dy, dw, dh);
+
+                    let img = new Image();
+                    img.src = canvas.toDataURL('image/png');
+
+                    img.onload = () => {
+                        item.set_image(img);
+                        CurationViewer.curationViewer.push(item);
+                    };
+                }
             }
 
             this.area.classList.add('hide');
@@ -467,6 +501,15 @@ async function run() {
         constructor() {
             super();
         }
+
+        cropping() {
+            if (this.oncrop) {
+                this.oncrop = false;
+            } else {
+                this.oncrop = true;
+            }
+            this.croppingIcon.classList.toggle('available');
+        }
     }
 
     customElements.define('basic-viewer', BasicViewer);
@@ -518,16 +561,13 @@ async function run() {
         connectedCallback() {
             viewerCounter++;
 
-            // 子要素をすべて削除
-            this.textContent = null;
-
             // card
             this.classList.add('card');
 
             // canvasを設定
             // const canvas = document.createElement('canvas');
             // this.appendChild(canvas);
-            const viewerCanvas = document.createElement('viewer-canvas');
+            const viewerCanvas = new ViewerCanvas(this);
             this.viewerCanvas = viewerCanvas;
             this.appendChild(viewerCanvas);
 
@@ -821,34 +861,6 @@ async function run() {
 
             // viewerを設定
             this.viewer = new Viewer(viewerCanvas, listView, iconView);
-            // {
-            //     viewerCanvas.addEventListener('mousedown', (event) => {
-            //         if (this.oncrop) {
-            //             this.viewerCanvas.cropStart(event);
-            //         } else {
-            //             this.viewer.move_mousedown(event);
-            //         }
-            //     });
-            //     viewerCanvas.addEventListener('mousemove', (event) => {
-            //         if (this.oncrop) {
-            //             this.viewerCanvas.cropping(event);
-            //         } else {
-            //             let position = this.viewer.move_mousemove(event);
-            //             if (position) {
-            //                 this.move(position.x, position.y);
-            //                 position.free();
-            //             }
-            //         }
-            //     });
-            //     viewerCanvas.addEventListener('mouseup', (event) => {
-            //         if (this.oncrop) {
-            //             this.viewerCanvas.crop(event);
-            //             this.cropping();
-            //         } else {
-            //             this.viewer.move_mouseup();
-            //         }
-            //     });
-            // }
 
             const manifestURL = this.getAttribute('manifest');
             if (manifestURL) {
@@ -935,6 +947,347 @@ async function run() {
     }
 
     customElements.define("iiif-manga-viewer", IIIFMangaViewer);
+
+    /**
+     * キュレーション一覧
+     */
+    class CurationViewer extends BasicViewer {
+        static curationViewer = undefined;
+
+        constructor() {
+            super();
+        }
+
+        /**
+         * 要素が DOM から削除されるたびに呼び出されます。
+         * クリーンアップ コードの実行（イベント リスナーの削除など）に役立ちます。
+         * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
+         */
+        disconnectedCallback() {
+            // メモリ開放
+            this.viewer.free();
+        }
+
+        /**
+         * 要素が DOM に挿入されるたびに呼び出されます。
+         * リソースの取得やレンダリングなどの、セットアップ コードの実行に役立ちます。
+         * 一般に、この時点まで作業を遅らせるようにする必要があります。
+         * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
+         */
+        connectedCallback() {
+            if (CurationViewer.curationViewer) {
+                CurationViewer.curationViewer.remove();
+            }
+            CurationViewer.curationViewer = this;
+
+            this.id = 'cutation-viewer';
+
+            // card
+            this.classList.add('card', 'hide');
+
+            // canvasを設定
+            // const canvas = document.createElement('canvas');
+            // this.appendChild(canvas);
+            const viewerCanvas = new ViewerCanvas(this);
+            this.viewerCanvas = viewerCanvas;
+            this.appendChild(viewerCanvas);
+
+            // navbar
+            let viewDropdownTrigger, filterDropdownTrigger, filterDropdown;
+            const navBar = document.createElement('nav');
+            {
+                const navWrapper = document.createElement('div');
+                navWrapper.classList.add('nav-wrapper');
+
+                const ulL = document.createElement('ul');
+                ulL.classList.add('left', 'toolbar-icons');
+                {
+                    const id = 'views-dropdown' + viewerCounter;
+
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    viewDropdownTrigger = a;
+                    a.classList.add('dropdown-trigger');
+                    a.setAttribute('data-target', id);
+                    a.innerHTML = '<i class="material-icons">menu</i>';
+                    li.appendChild(a);
+                    ulL.appendChild(li);
+
+                    const dropdown = document.createElement('ul');
+                    dropdown.classList.add('dropdown-content');
+                    dropdown.id = id;
+                    {
+                        const li = document.createElement('li');
+                        const a = document.createElement('a');
+                        a.classList.add('close');
+                        a.innerHTML =
+                            '<i class="material-icons">close</i>Close';
+                        a.onclick = () => {
+                            this.remove();
+                        };
+                        li.appendChild(a);
+                        dropdown.appendChild(li);
+                    }
+
+                    navBar.appendChild(dropdown);
+                }
+                {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.classList.add('available');
+                    a.innerHTML =
+                        '<i class="material-icons">view_list</i>';
+                    a.onclick = () => {
+                        this.listView.onOff();
+                    };
+                    this.listViewIcon = a;
+                    li.appendChild(a);
+                    ulL.appendChild(li);
+                }
+                {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.innerHTML =
+                        '<i class="material-icons">view_module</i>';
+                    a.onclick = () => {
+                        this.iconView.onOff();
+                    };
+                    this.iconViewIcon = a;
+                    li.appendChild(a);
+                    ulL.appendChild(li);
+                }
+                navWrapper.appendChild(ulL);
+
+                const label = document.createElement('span');
+                this.label = label;
+                navWrapper.appendChild(label);
+
+                const ulR = document.createElement('ul');
+                ulR.classList.add('right', 'toolbar-icons');
+                {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.innerHTML =
+                        '<i class="material-icons">crop</i>';
+                    this.croppingIcon = a;
+                    a.onclick = () => {
+                        this.cropping();
+                    };
+                    li.appendChild(a);
+                    ulR.appendChild(li);
+                }
+                {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.innerHTML =
+                        '<i class="material-icons">save_alt</i>';
+                    a.onclick = () => {
+                        let base64ToBlob = (base64) => {
+                            let blob;
+                            let bin = atob(base64.replace(/^.*,/, ""));
+                            let buffer = new Uint8Array(bin.length);
+                            for (let i = 0; i < bin.length; i++) {
+                                buffer[i] = bin.charCodeAt(i);
+                            }
+                            // Blobを作成
+                            try {
+                                blob = new Blob([buffer.buffer], {
+                                    type: "image/png"
+                                });
+                            } catch (e) {
+                                return false;
+                            }
+                            return blob;
+                        };
+
+                        const image = viewerCanvas.image;
+                        const canvas = document.createElement('canvas');
+                        canvas.width = image.width;
+                        canvas.height = image.height;
+                        canvas.getContext("2d").drawImage(image, 0, 0);
+
+                        const link = document.createElement('a');
+                        link.style.display = 'none';
+                        const base64 = canvas.toDataURL('image/png').split(',')[1];
+                        link.href = window.URL.createObjectURL(base64ToBlob(base64));
+                        link.download = this.viewer.label() + ' ' + this.viewer.index + '.png';
+                        document.body.appendChild(link);
+
+                        link.click();
+                    };
+                    li.appendChild(a);
+                    ulR.appendChild(li);
+                }
+                {
+                    const id = 'filters-dropdown' + viewerCounter;
+
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    filterDropdownTrigger = a;
+                    a.classList.add('dropdown-trigger');
+                    a.setAttribute('data-target', id);
+                    a.innerHTML =
+                        '<i class="material-icons">tune</i>';
+                    li.appendChild(a);
+                    ulR.appendChild(li);
+
+                    // dropdown-content
+                    const dropdown = document.createElement('ul');
+                    filterDropdown = dropdown;
+                    dropdown.id = id;
+                    dropdown.classList.add('dropdown-content', 'filter-dropdown');
+                    let brightness, contrast, gradient, greyscale, invert;
+                    let onchange = () => {
+                        viewerCanvas.style.filter =
+                            'brightness(' + brightness.value + '%) ' +
+                            'contrast(' + contrast.value + '%) ' +
+                            'grayscale(' + greyscale.value + '%) ' +
+                            'saturate(' + gradient.value + '%) ' +
+                            'invert(' + invert.value + '%) ';
+                    };
+                    {
+                        // brightness
+                        const li = document.createElement('li');
+                        li.innerHTML =
+                            '<div class="input-field">' +
+                            '   <i class="material-icons prefix">brightness_low</i> ' +
+                            '   <form action="#">' +
+                            '       <label>Brightness</label>' +
+                            '       <p class="range-field">' +
+                            '           <input type="range" value="100" min="0" max="200" />' +
+                            '       </p>' +
+                            '   </form>' +
+                            '</div>';
+                        brightness = li.querySelector('input');
+                        brightness.oninput = () => {
+                            onchange();
+                        };
+                        dropdown.appendChild(li);
+                    }
+                    {
+                        // contrast
+                        const li = document.createElement('li');
+                        li.innerHTML =
+                            '<div class="input-field">' +
+                            '   <i class="material-icons prefix">brightness_medium</i> ' +
+                            '   <form action="#">' +
+                            '       <label>Contrast</label>' +
+                            '       <p class="range-field">' +
+                            '           <input type="range" value="100" min="0" max="200" />' +
+                            '       </p>' +
+                            '   </form>' +
+                            '</div>';
+                        contrast = li.querySelector('input');
+                        contrast.oninput = () => {
+                            onchange();
+                        };
+                        dropdown.appendChild(li);
+                    }
+                    {
+                        // gradient
+                        const li = document.createElement('li');
+                        li.innerHTML =
+                            '<div class="input-field">' +
+                            '   <i class="material-icons prefix">gradient</i> ' +
+                            '   <form action="#">' +
+                            '       <label>Gradient</label>' +
+                            '       <p class="range-field">' +
+                            '           <input type="range" value="100" min="0" max="100" />' +
+                            '       </p>' +
+                            '   </form>' +
+                            '</div>';
+                        gradient = li.querySelector('input');
+                        gradient.oninput = () => {
+                            onchange();
+                        };
+                        dropdown.appendChild(li);
+                    }
+                    {
+                        // greyscale
+                        const li = document.createElement('li');
+                        li.innerHTML =
+                            '<div class="input-field">' +
+                            '   <i class="material-icons prefix">filter_b_and_w</i> ' +
+                            '   <form action="#">' +
+                            '       <label>Greyscale</label>' +
+                            '       <p class="range-field">' +
+                            '           <input type="range" value="0" min="0" max="100" />' +
+                            '       </p>' +
+                            '   </form>' +
+                            '</div>';
+                        greyscale = li.querySelector('input');
+                        greyscale.oninput = () => {
+                            onchange();
+                        };
+                        dropdown.appendChild(li);
+                    }
+                    {
+                        // invert
+                        const li = document.createElement('li');
+                        li.innerHTML =
+                            '<div class="input-field">' +
+                            '   <i class="material-icons prefix">invert_colors</i> ' +
+                            '   <form action="#">' +
+                            '       <label>Invert</label>' +
+                            '       <p class="range-field">' +
+                            '           <input type="range" value="0" min="0" max="100" />' +
+                            '       </p>' +
+                            '   </form>' +
+                            '</div>';
+                        invert = li.querySelector('input');
+                        invert.oninput = () => {
+                            onchange();
+                        };
+                        dropdown.appendChild(li);
+                    }
+                    navBar.appendChild(dropdown);
+                }
+                navWrapper.appendChild(ulR);
+
+                navBar.appendChild(navWrapper);
+            }
+            this.appendChild(navBar);
+
+            M.Dropdown.init(viewDropdownTrigger, {
+                constrainWidth: false,
+                coverTrigger: false,
+                closeOnClick: false,
+            });
+            M.Dropdown.init(filterDropdownTrigger, {
+                alignment: 'right',
+                constrainWidth: false,
+                coverTrigger: false,
+                closeOnClick: false,
+                onOpenEnd: () => {
+                    filterDropdown.style.width = '400px';
+                    M.Range.init(filterDropdown.querySelectorAll('input[type="range"]'), {});
+                },
+            });
+
+            // viewsを設定
+            const views = document.createElement('view-s');
+            this.views = views;
+            this.appendChild(views);
+
+            // todo listview, iconviewを設定
+
+            // viewerを設定
+            this.viewer = new WasmCurationViewer(this.viewerCanvas);
+        }
+
+        push = (item) => {
+            this.viewer.push(item);
+            this.viewer.show_last();
+            this.classList.remove('hide');
+        }
+
+        move(newX, newY) {
+            let image = this.viewerCanvas.getImage();
+            image.style.transform = 'translate(' + newX + 'px,' + newY + 'px)';
+        }
+    }
+
+    customElements.define('curation-viewer', CurationViewer);
 
     /**
      * 検索バー

@@ -2,7 +2,7 @@ i {
   font-style: normal;
 }
 
-iiif-manga-viewer.card {
+iiif-manga-viewer.card, curation-viewer.card {
   position: relative;
   flex: 1 1;
   max-width: 100vw;
@@ -11,7 +11,7 @@ iiif-manga-viewer.card {
   margin-left: 5px;
   margin-top: calc(0.5rem + 40px);
 }
-iiif-manga-viewer.card > nav {
+iiif-manga-viewer.card > nav, curation-viewer.card > nav {
   position: absolute;
   top: -40px;
   background-color: #5c6bc0;
@@ -20,79 +20,79 @@ iiif-manga-viewer.card > nav {
   height: 40px;
   line-height: 40px;
 }
-iiif-manga-viewer.card > nav .brand-logo {
+iiif-manga-viewer.card > nav .brand-logo, curation-viewer.card > nav .brand-logo {
   color: white;
 }
-iiif-manga-viewer.card > nav a {
+iiif-manga-viewer.card > nav a, curation-viewer.card > nav a {
   color: white;
 }
-iiif-manga-viewer.card > nav .toolbar-icons a.available {
+iiif-manga-viewer.card > nav .toolbar-icons a.available, curation-viewer.card > nav .toolbar-icons a.available {
   background-color: rgba(0, 0, 0, 0.2);
 }
-iiif-manga-viewer.card > nav i {
+iiif-manga-viewer.card > nav i, curation-viewer.card > nav i {
   height: 40px;
   line-height: 40px;
   color: inherit;
 }
-iiif-manga-viewer.card > nav .left {
+iiif-manga-viewer.card > nav .left, curation-viewer.card > nav .left {
   position: absolute;
   left: 0;
 }
-iiif-manga-viewer.card > nav .right {
+iiif-manga-viewer.card > nav .right, curation-viewer.card > nav .right {
   position: absolute;
   right: 0;
 }
-iiif-manga-viewer.card > nav .left .dropdown-content li i {
+iiif-manga-viewer.card > nav .left .dropdown-content li i, curation-viewer.card > nav .left .dropdown-content li i {
   line-height: inherit;
   height: inherit;
 }
-iiif-manga-viewer.card > nav .left .dropdown-content li .close {
+iiif-manga-viewer.card > nav .left .dropdown-content li .close, curation-viewer.card > nav .left .dropdown-content li .close {
   color: #F44336;
 }
-iiif-manga-viewer.card > nav .dropdown-content li {
+iiif-manga-viewer.card > nav .dropdown-content li, curation-viewer.card > nav .dropdown-content li {
   color: #5c6bc0;
 }
-iiif-manga-viewer.card > nav .dropdown-content li a {
+iiif-manga-viewer.card > nav .dropdown-content li a, curation-viewer.card > nav .dropdown-content li a {
   color: #5c6bc0;
 }
-iiif-manga-viewer.card > nav .dropdown-content.filter-dropdown {
+iiif-manga-viewer.card > nav .dropdown-content.filter-dropdown, curation-viewer.card > nav .dropdown-content.filter-dropdown {
   position: absolute;
   right: 0 !important;
   left: auto !important;
   overflow: hidden;
   background-color: rgba(255, 255, 255, 0.65);
 }
-iiif-manga-viewer.card > nav .dropdown-content.filter-dropdown li {
+iiif-manga-viewer.card > nav .dropdown-content.filter-dropdown li, curation-viewer.card > nav .dropdown-content.filter-dropdown li {
   background-color: rgba(255, 255, 255, 0);
   padding: 0 10px;
   overflow: hidden;
 }
-iiif-manga-viewer.card > nav .dropdown-content.filter-dropdown li .input-field {
+iiif-manga-viewer.card > nav .dropdown-content.filter-dropdown li .input-field, curation-viewer.card > nav .dropdown-content.filter-dropdown li .input-field {
   display: flex;
   align-items: center;
 }
-iiif-manga-viewer.card > nav .dropdown-content.filter-dropdown li .input-field > i.prefix {
+iiif-manga-viewer.card > nav .dropdown-content.filter-dropdown li .input-field > i.prefix, curation-viewer.card > nav .dropdown-content.filter-dropdown li .input-field > i.prefix {
   position: static;
   flex: 0 0;
 }
-iiif-manga-viewer.card > nav .dropdown-content.filter-dropdown li .input-field > form {
+iiif-manga-viewer.card > nav .dropdown-content.filter-dropdown li .input-field > form, curation-viewer.card > nav .dropdown-content.filter-dropdown li .input-field > form {
   flex: 1 1;
   padding-left: 1rem;
 }
-iiif-manga-viewer.card > nav .dropdown-content.filter-dropdown li .input-field > form p.range-field {
+iiif-manga-viewer.card > nav .dropdown-content.filter-dropdown li .input-field > form p.range-field, curation-viewer.card > nav .dropdown-content.filter-dropdown li .input-field > form p.range-field {
   margin: 5px 0;
 }
-iiif-manga-viewer.card > nav .dropdown-content.filter-dropdown li .input-field > form p.range-field > input {
+iiif-manga-viewer.card > nav .dropdown-content.filter-dropdown li .input-field > form p.range-field > input, curation-viewer.card > nav .dropdown-content.filter-dropdown li .input-field > form p.range-field > input {
   padding-left: 0;
 }
-iiif-manga-viewer.card canvas {
+iiif-manga-viewer.card canvas, curation-viewer.card canvas {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: contain;
   background-color: #e0e0e0;
 }
-iiif-manga-viewer.card viewer-canvas {
+iiif-manga-viewer.card viewer-canvas, curation-viewer.card viewer-canvas {
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -102,17 +102,17 @@ iiif-manga-viewer.card viewer-canvas {
   background-color: #e0e0e0;
   overflow: hidden;
 }
-iiif-manga-viewer.card viewer-canvas img {
+iiif-manga-viewer.card viewer-canvas img, curation-viewer.card viewer-canvas img {
   max-height: 100%;
   max-width: 100%;
 }
-iiif-manga-viewer.card viewer-canvas .area {
+iiif-manga-viewer.card viewer-canvas .area, curation-viewer.card viewer-canvas .area {
   position: absolute;
   background-color: rgba(92, 107, 192, 0.3);
   z-index: 100;
   pointer-events: none;
 }
-iiif-manga-viewer.card view-s {
+iiif-manga-viewer.card view-s, curation-viewer.card view-s {
   height: 100%;
   position: absolute;
   left: 0;
@@ -120,49 +120,49 @@ iiif-manga-viewer.card view-s {
   display: flex;
   background-color: rgba(255, 255, 255, 0.87);
 }
-iiif-manga-viewer.card view-s ul.image-list {
+iiif-manga-viewer.card view-s ul.image-list, curation-viewer.card view-s ul.image-list {
   min-width: 200px;
   overflow-y: scroll;
   margin: 0;
   cursor: pointer;
   border: none;
 }
-iiif-manga-viewer.card view-s ul.image-list::-webkit-scrollbar {
+iiif-manga-viewer.card view-s ul.image-list::-webkit-scrollbar, curation-viewer.card view-s ul.image-list::-webkit-scrollbar {
   display: none;
 }
-iiif-manga-viewer.card view-s ul.image-list.hide {
+iiif-manga-viewer.card view-s ul.image-list.hide, curation-viewer.card view-s ul.image-list.hide {
   display: none;
 }
-iiif-manga-viewer.card view-s ul.image-list li.image-list-item:hover {
+iiif-manga-viewer.card view-s ul.image-list li.image-list-item:hover, curation-viewer.card view-s ul.image-list li.image-list-item:hover {
   background-color: rgba(0, 0, 0, 0.2);
 }
-iiif-manga-viewer.card view-s ul.image-list li.image-list-item i.status-icon:after {
+iiif-manga-viewer.card view-s ul.image-list li.image-list-item i.status-icon:after, curation-viewer.card view-s ul.image-list li.image-list-item i.status-icon:after {
   font-family: "Material Icons";
   content: "image";
   color: #5c6bc0;
 }
-iiif-manga-viewer.card view-s ul.image-list li.image-list-item[loading] i.status-icon:after {
+iiif-manga-viewer.card view-s ul.image-list li.image-list-item[loading] i.status-icon:after, curation-viewer.card view-s ul.image-list li.image-list-item[loading] i.status-icon:after {
   font-family: "Material Icons";
   content: "compare";
   color: #bdbdbd;
 }
-iiif-manga-viewer.card view-s icon-view {
+iiif-manga-viewer.card view-s icon-view, curation-viewer.card view-s icon-view {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   overflow-y: scroll;
 }
-iiif-manga-viewer.card view-s icon-view.hide {
+iiif-manga-viewer.card view-s icon-view.hide, curation-viewer.card view-s icon-view.hide {
   display: none;
 }
-iiif-manga-viewer.card view-s icon-view icon-view-item {
+iiif-manga-viewer.card view-s icon-view icon-view-item, curation-viewer.card view-s icon-view icon-view-item {
   flex: 1 1;
   display: flex;
   align-items: center;
   flex-direction: column;
   margin: 20px;
 }
-iiif-manga-viewer.card .fixed-action-btn {
+iiif-manga-viewer.card .fixed-action-btn, curation-viewer.card .fixed-action-btn {
   position: absolute;
   right: auto;
   left: 23px;

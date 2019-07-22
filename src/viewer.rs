@@ -265,9 +265,9 @@ impl Viewer {
 }
 
 /// 画像を表示する部分
-struct Canvas {
-    element: Element,
-    mousedown: Option<(f64, f64)>,
+pub struct Canvas {
+    pub element: Element,
+    pub mousedown: Option<(f64, f64)>,
 }
 
 impl Canvas {
