@@ -5,7 +5,8 @@ import init, {
     Direction,
     SearchQuery,
     SearchResult,
-    SearchResults
+    SearchResults,
+    CollectionItem,
 } from '../../pkg/iiif_manga_viewer_frontend.js';
 
 let open = (url) => {
@@ -309,6 +310,14 @@ async function run() {
             this.area = document.createElement('div');
             this.area.classList.add('area', 'hide');
             super.appendChild(this.area);
+
+            // 自分の所属するマンガビューアを登録しておく
+            let mangaViewer = this;
+            while (!(mangaViewer instanceof IIIFMangaViewer)) {
+                mangaViewer = mangaViewer.parentElement;
+                if (!mangaViewer) return;
+            }
+            this.mangaViewer = mangaViewer;
         }
 
         getImage() {
@@ -352,12 +361,23 @@ async function run() {
         };
 
         crop = (event) => {
-            if (event.target !== this.image || !this.cropOrigin) return;
+            let origin = this.cropOrigin;
+            if (event.target !== this.image || !origin) {
+                console.log('out of target');
+                console.log(event.target);
+                console.log(origin);
+            } else {
+                let manifestID = this.mangaViewer.getAttribute('manifest');
+                let imageID = this.image.src;
+                let item = new CollectionItem(manifestID, imageID, origin, event, this.image);
+                console.log('' + item.json());
+                item.free();
+            }
 
             this.area.classList.add('hide');
             // finish
-            this.cropOrigin = undefined;
-        }
+            // this.cropOrigin = undefined;
+        };
 
         appendChild(newChild) {
             if (newChild instanceof HTMLImageElement) {
