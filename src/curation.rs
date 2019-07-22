@@ -7,7 +7,7 @@ use web_sys::{MouseEvent,HtmlImageElement};
 
 #[wasm_bindgen]
 #[derive(Serialize, Deserialize)]
-pub struct CollectionItem {
+pub struct CurationItem {
     /// imageを含むManifestのid
     manifest_id: String,
     /// imageのid(取得先)
@@ -17,7 +17,7 @@ pub struct CollectionItem {
 }
 
 #[wasm_bindgen]
-impl CollectionItem {
+impl CurationItem {
     #[wasm_bindgen(constructor)]
     pub fn new(manifest_id: String, image_id: String, origin: MouseEvent, term: MouseEvent, img: HtmlImageElement) -> Self {
         let zoom = (img.natural_width() / img.width()) as i32;
