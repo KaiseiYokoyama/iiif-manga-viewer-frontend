@@ -9,16 +9,14 @@ import init, {
     CurationItem,
 } from '../../pkg/iiif_manga_viewer_frontend.js';
 
-let open = (url) => {
-    const viewers = document.getElementById('viewers');
-    let viewer = document.createElement('div');
-    viewer.innerHTML = '<div is="iiif-manga-viewer" manifest="' + url + '"></div>';
-    viewer = viewer.firstElementChild;
-    viewers.appendChild(viewer);
-};
-
 async function run() {
     await init();
+
+    let open = (url) => {
+        const viewers = document.getElementById('viewers');
+        let viewer = new IIIFMangaViewer(url);
+        viewers.appendChild(viewer);
+    };
 
     let viewerCounter = 0;
 
@@ -318,6 +316,36 @@ async function run() {
                 if (!mangaViewer) return;
             }
             this.mangaViewer = mangaViewer;
+
+            // ドラッグ
+            {
+                this.addEventListener('mousedown', (event) => {
+                    if (this.mangaViewer.oncrop) {
+                        this.cropStart(event);
+                    } else {
+                        this.mangaViewer.viewer.move_mousedown(event);
+                    }
+                });
+                this.addEventListener('mousemove', (event) => {
+                    if (this.mangaViewer.oncrop) {
+                        this.cropping(event);
+                    } else {
+                        let position = this.mangaViewer.viewer.move_mousemove(event);
+                        if (position) {
+                            this.mangaViewer.move(position.x, position.y);
+                            position.free();
+                        }
+                    }
+                });
+                this.addEventListener('mouseup', (event) => {
+                    if (this.mangaViewer.oncrop) {
+                        this.crop(event);
+                        this.mangaViewer.cropping();
+                    } else {
+                        this.mangaViewer.viewer.move_mouseup();
+                    }
+                });
+            }
         }
 
         getImage() {
@@ -433,11 +461,25 @@ async function run() {
     customElements.define("view-s", Views);
 
     /**
-     * ビューア本体
+     * ビューアの基礎
      */
-    class IIIFMangaViewer extends HTMLDivElement {
+    class BasicViewer extends HTMLElement {
         constructor() {
             super();
+        }
+    }
+
+    customElements.define('basic-viewer', BasicViewer);
+
+    /**
+     * ビューア本体
+     */
+    class IIIFMangaViewer extends BasicViewer {
+        constructor(url) {
+            super();
+            if (url) {
+                this.setAttribute('manifest', url);
+            }
             // this.initialize();
         }
 
@@ -773,34 +815,34 @@ async function run() {
 
             // viewerを設定
             this.viewer = new Viewer(viewerCanvas, listView, iconView);
-            {
-                viewerCanvas.addEventListener('mousedown', (event) => {
-                    if (this.oncrop) {
-                        this.viewerCanvas.cropStart(event);
-                    } else {
-                        this.viewer.move_mousedown(event);
-                    }
-                });
-                viewerCanvas.addEventListener('mousemove', (event) => {
-                    if (this.oncrop) {
-                        this.viewerCanvas.cropping(event);
-                    } else {
-                        let position = this.viewer.move_mousemove(event);
-                        if (position) {
-                            this.move(position.x, position.y);
-                            position.free();
-                        }
-                    }
-                });
-                viewerCanvas.addEventListener('mouseup', (event) => {
-                    if (this.oncrop) {
-                        this.viewerCanvas.crop(event);
-                        this.cropping();
-                    } else {
-                        this.viewer.move_mouseup();
-                    }
-                });
-            }
+            // {
+            //     viewerCanvas.addEventListener('mousedown', (event) => {
+            //         if (this.oncrop) {
+            //             this.viewerCanvas.cropStart(event);
+            //         } else {
+            //             this.viewer.move_mousedown(event);
+            //         }
+            //     });
+            //     viewerCanvas.addEventListener('mousemove', (event) => {
+            //         if (this.oncrop) {
+            //             this.viewerCanvas.cropping(event);
+            //         } else {
+            //             let position = this.viewer.move_mousemove(event);
+            //             if (position) {
+            //                 this.move(position.x, position.y);
+            //                 position.free();
+            //             }
+            //         }
+            //     });
+            //     viewerCanvas.addEventListener('mouseup', (event) => {
+            //         if (this.oncrop) {
+            //             this.viewerCanvas.crop(event);
+            //             this.cropping();
+            //         } else {
+            //             this.viewer.move_mouseup();
+            //         }
+            //     });
+            // }
 
             const manifestURL = this.getAttribute('manifest');
             if (manifestURL) {
@@ -886,7 +928,7 @@ async function run() {
         }
     }
 
-    customElements.define("iiif-manga-viewer", IIIFMangaViewer, {extends: "div"});
+    customElements.define("iiif-manga-viewer", IIIFMangaViewer);
 
     /**
      * 検索バー
@@ -1199,13 +1241,9 @@ async function run() {
                 cardImage.appendChild(fab);
 
                 // onclick
-                fab.onclick = (event) => {
-                    const viewers = document.getElementById('viewers');
-                    let viewer = document.createElement('div');
-                    viewer.innerHTML = '<div is="iiif-manga-viewer" manifest="' + this.result.url() + '"></div>';
-                    viewer = viewer.firstElementChild;
-                    viewers.appendChild(viewer);
-                }
+                fab.onclick = () => {
+                    open(this.result.url());
+                };
             }
             this.appendChild(cardImage);
 
