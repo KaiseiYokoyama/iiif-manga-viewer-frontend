@@ -639,9 +639,15 @@ async function run() {
                             return blob;
                         };
 
+                        const image = viewerCanvas.image;
+                        const canvas = document.createElement('canvas');
+                        canvas.width = image.width;
+                        canvas.height = image.height;
+                        canvas.getContext("2d").drawImage(image, 0, 0);
+
                         const link = document.createElement('a');
                         link.style.display = 'none';
-                        const base64 = viewerCanvas.toDataURL('image/png').split(',')[1];
+                        const base64 = canvas.toDataURL('image/png').split(',')[1];
                         link.href = window.URL.createObjectURL(base64ToBlob(base64));
                         link.download = this.viewer.label() + ' ' + this.viewer.index + '.png';
                         document.body.appendChild(link);
