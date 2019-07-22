@@ -15,18 +15,20 @@
         <div class="nav-wrapper">
             <a href="/" class="title">IIIF Manga Viewer</a>
             <ul class="right nav-menu">
-                <li><a href="#modal-open" class="waves-effect waves-light btn btn-flat modal-trigger">Open Manifest<i class="material-icons right">open_in_browser</i></a></li>
-                <li><a href="#modal-search" class="waves-effect waves-light btn modal-trigger">Search Manifest<i class="material-icons right">search</i></a></li>
+                <li><a href="#modal-open" class="waves-effect waves-light btn btn-flat modal-trigger">Open Manifest<i
+                        class="material-icons right">open_in_browser</i></a></li>
+                <li><a href="#modal-search" class="waves-effect waves-light btn modal-trigger">Search Manifest<i
+                        class="material-icons right">search</i></a></li>
             </ul>
         </div>
     </nav>
 </header>
 <div id="contents">
     <div id="viewers">
-<!--        <div is="iiif-manga-viewer" manifest="http://www2.dhii.jp/nijl/NIJL0001/SA4-0026/manifest.json"></div>-->
-<!--        <div is="iiif-manga-viewer" manifest="http://www2.dhii.jp/nijl/NIJL0008/NA4-0644/manifest.json"></div>-->
-        <div is="iiif-manga-viewer" manifest="https://www.dl.ndl.go.jp/api/iiif/2542527/manifest.json"></div>
-                <div is="iiif-manga-viewer" manifest="https://www.dl.ndl.go.jp/api/iiif/2532216/manifest.json"></div>
+        <!--        <div is="iiif-manga-viewer" manifest="http://www2.dhii.jp/nijl/NIJL0001/SA4-0026/manifest.json"></div>-->
+        <!--        <div is="iiif-manga-viewer" manifest="http://www2.dhii.jp/nijl/NIJL0008/NA4-0644/manifest.json"></div>-->
+        <iiif-manga-viewer manifest="https://www.dl.ndl.go.jp/api/iiif/2542527/manifest.json"></iiif-manga-viewer>
+        <iiif-manga-viewer manifest="https://www.dl.ndl.go.jp/api/iiif/2532216/manifest.json"></iiif-manga-viewer>
     </div>
     <search-modal id="modal-search"></search-modal>
     <open-modal id="modal-open"></open-modal>
