@@ -100,6 +100,7 @@ div[is=iiif-manga-viewer].card viewer-canvas {
   justify-content: center;
   align-items: center;
   background-color: #e0e0e0;
+  overflow: hidden;
 }
 div[is=iiif-manga-viewer].card viewer-canvas img {
   max-height: 100%;

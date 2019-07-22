@@ -147,6 +147,8 @@ div[is="iiif-manga-viewer"].card {
 
     background-color: $primary-color;
 
+    overflow: hidden;
+
     img {
       max-height: 100%;
       max-width: 100%;
