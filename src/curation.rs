@@ -27,6 +27,21 @@ pub struct CurationItem {
     pub zoom: f64,
 }
 
+impl PartialEq for CurationItem {
+    fn eq(&self, other: &Self) -> bool {
+        self.manifest_id == other.manifest_id
+            && self.image_id == other.image_id
+            && self.label == other.label
+            && self.crop == other.crop
+            && self.description == other.description
+            && self.position_x == other.position_x
+            && self.position_y == other.position_y
+            && self.original_x == other.original_x
+            && self.original_y == other.original_y
+            && self.zoom == other.zoom
+    }
+}
+
 #[wasm_bindgen]
 impl CurationItem {
     #[wasm_bindgen(constructor)]
@@ -65,6 +80,10 @@ impl CurationItem {
 
     pub fn image_id(&self) -> String {
         self.image_id.clone()
+    }
+
+    pub fn label(&self) -> String {
+        self.label.clone()
     }
 
     pub fn get_x_start(&self) -> u32 {
@@ -134,8 +153,8 @@ impl WasmCurationViewer {
         self.items.get(self.index).cloned()
     }
 
-    pub fn push(&mut self, item: CurationItem) {
-        self.items.push(item);
+    pub fn push(&mut self, item: &CurationItem) {
+        self.items.push(item.clone());
     }
 
     pub fn remove(&mut self, index: usize) {
@@ -144,7 +163,27 @@ impl WasmCurationViewer {
 
     #[wasm_bindgen]
     /// イメージを表示する
-    pub fn show(&mut self, index: usize) {
+    pub fn show(&mut self, item: &CurationItem) -> usize {
+        let mut index = self.index;
+        for i in 0..self.items.len() {
+            if let Some(itm) = self.items.get(i) {
+                if itm == item {
+                    index = i;
+                }
+            }
+        }
+        if let Some(image) = self.items.get(index) {
+            if let Some(img) = &image.image {
+                self.index = index;
+                self.canvas.element.append_child(&Node::from(Element::from(img.clone())));
+            }
+        }
+        index
+    }
+
+    #[wasm_bindgen]
+    /// イメージを表示する
+    pub fn show_by_index(&mut self, index: usize) {
         if let Some(image) = self.items.get(index) {
             if let Some(img) = &image.image {
                 self.index = index;
@@ -172,19 +211,19 @@ impl WasmCurationViewer {
     #[wasm_bindgen]
     /// 次のイメージを表示する
     pub fn next(&mut self) {
-        self.show(self.index + 1)
+        self.show_by_index(self.index + 1)
     }
 
     #[wasm_bindgen]
     /// 前のイメージを表示する
     pub fn prev(&mut self) {
-        self.show(self.index - 1)
+        self.show_by_index(self.index - 1)
     }
 
     /// 最後のイメージを表示する
     pub fn show_last(&mut self) {
         let index = self.items.len();
-        self.show(index - 1);
+        self.show_by_index(index - 1);
     }
 
     /// mousedownイベント

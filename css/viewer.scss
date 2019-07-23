@@ -176,7 +176,7 @@ iiif-manga-viewer.card,curation-viewer.card {
 
     background-color: rgba(256, 256, 256, 0.87);
 
-    ul.image-list {
+    ul.image-list, ul.curation-list {
       //height: 100%;
       min-width: 200px;
 
@@ -196,7 +196,7 @@ iiif-manga-viewer.card,curation-viewer.card {
         display: none;
       }
 
-      li.image-list-item {
+      li.image-list-item,li.curation-list-item {
         &:hover {
           background-color: rgba(0, 0, 0, 0.2);
         }

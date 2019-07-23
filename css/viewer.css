@@ -120,28 +120,28 @@ iiif-manga-viewer.card view-s, curation-viewer.card view-s {
   display: flex;
   background-color: rgba(255, 255, 255, 0.87);
 }
-iiif-manga-viewer.card view-s ul.image-list, curation-viewer.card view-s ul.image-list {
+iiif-manga-viewer.card view-s ul.image-list, iiif-manga-viewer.card view-s ul.curation-list, curation-viewer.card view-s ul.image-list, curation-viewer.card view-s ul.curation-list {
   min-width: 200px;
   overflow-y: scroll;
   margin: 0;
   cursor: pointer;
   border: none;
 }
-iiif-manga-viewer.card view-s ul.image-list::-webkit-scrollbar, curation-viewer.card view-s ul.image-list::-webkit-scrollbar {
+iiif-manga-viewer.card view-s ul.image-list::-webkit-scrollbar, iiif-manga-viewer.card view-s ul.curation-list::-webkit-scrollbar, curation-viewer.card view-s ul.image-list::-webkit-scrollbar, curation-viewer.card view-s ul.curation-list::-webkit-scrollbar {
   display: none;
 }
-iiif-manga-viewer.card view-s ul.image-list.hide, curation-viewer.card view-s ul.image-list.hide {
+iiif-manga-viewer.card view-s ul.image-list.hide, iiif-manga-viewer.card view-s ul.curation-list.hide, curation-viewer.card view-s ul.image-list.hide, curation-viewer.card view-s ul.curation-list.hide {
   display: none;
 }
-iiif-manga-viewer.card view-s ul.image-list li.image-list-item:hover, curation-viewer.card view-s ul.image-list li.image-list-item:hover {
+iiif-manga-viewer.card view-s ul.image-list li.image-list-item:hover, iiif-manga-viewer.card view-s ul.image-list li.curation-list-item:hover, iiif-manga-viewer.card view-s ul.curation-list li.image-list-item:hover, iiif-manga-viewer.card view-s ul.curation-list li.curation-list-item:hover, curation-viewer.card view-s ul.image-list li.image-list-item:hover, curation-viewer.card view-s ul.image-list li.curation-list-item:hover, curation-viewer.card view-s ul.curation-list li.image-list-item:hover, curation-viewer.card view-s ul.curation-list li.curation-list-item:hover {
   background-color: rgba(0, 0, 0, 0.2);
 }
-iiif-manga-viewer.card view-s ul.image-list li.image-list-item i.status-icon:after, curation-viewer.card view-s ul.image-list li.image-list-item i.status-icon:after {
+iiif-manga-viewer.card view-s ul.image-list li.image-list-item i.status-icon:after, iiif-manga-viewer.card view-s ul.image-list li.curation-list-item i.status-icon:after, iiif-manga-viewer.card view-s ul.curation-list li.image-list-item i.status-icon:after, iiif-manga-viewer.card view-s ul.curation-list li.curation-list-item i.status-icon:after, curation-viewer.card view-s ul.image-list li.image-list-item i.status-icon:after, curation-viewer.card view-s ul.image-list li.curation-list-item i.status-icon:after, curation-viewer.card view-s ul.curation-list li.image-list-item i.status-icon:after, curation-viewer.card view-s ul.curation-list li.curation-list-item i.status-icon:after {
   font-family: "Material Icons";
   content: "image";
   color: #5c6bc0;
 }
-iiif-manga-viewer.card view-s ul.image-list li.image-list-item[loading] i.status-icon:after, curation-viewer.card view-s ul.image-list li.image-list-item[loading] i.status-icon:after {
+iiif-manga-viewer.card view-s ul.image-list li.image-list-item[loading] i.status-icon:after, iiif-manga-viewer.card view-s ul.image-list li.curation-list-item[loading] i.status-icon:after, iiif-manga-viewer.card view-s ul.curation-list li.image-list-item[loading] i.status-icon:after, iiif-manga-viewer.card view-s ul.curation-list li.curation-list-item[loading] i.status-icon:after, curation-viewer.card view-s ul.image-list li.image-list-item[loading] i.status-icon:after, curation-viewer.card view-s ul.image-list li.curation-list-item[loading] i.status-icon:after, curation-viewer.card view-s ul.curation-list li.image-list-item[loading] i.status-icon:after, curation-viewer.card view-s ul.curation-list li.curation-list-item[loading] i.status-icon:after {
   font-family: "Material Icons";
   content: "compare";
   color: #bdbdbd;

@@ -407,7 +407,6 @@ async function run() {
                 }
                 let imageID = this.image.src;
                 let item = new CurationItem(manifestID, imageID, this.imageViewer.viewer.label() + '_' + this.imageViewer.viewer.image_label(), origin, event, this.image);
-                console.log('' + item.json());
                 // crop image
                 {
                     let canvas = document.createElement('canvas');
@@ -429,10 +428,8 @@ async function run() {
                     let img = new Image();
                     img.src = canvas.toDataURL('image/png');
 
-                    img.onload = () => {
-                        item.set_image(img);
-                        CurationViewer.curationViewer.push(item);
-                    };
+                    item.set_image(img);
+                    CurationViewer.curationViewer.push(item);
                 }
             }
 
@@ -483,10 +480,10 @@ async function run() {
 
         /**
          * 子要素を追加する。View以外は無視。
-         * @param newChild {ListView,IconView} 子要素
+         * @param newChild {ListView,IconView, CurationListView} 子要素
          */
         appendChild(newChild) {
-            if (newChild instanceof ListView || newChild instanceof IconView || newChild instanceof SearchModal) {
+            if (newChild instanceof ListView || newChild instanceof IconView || newChild instanceof CurationListView) {
                 super.appendChild(newChild);
             }
         }
@@ -949,6 +946,131 @@ async function run() {
     customElements.define("iiif-manga-viewer", IIIFMangaViewer);
 
     /**
+     * キュレーション用ListViewItem
+     */
+    class CurationListViewItem extends HTMLLIElement {
+        /**
+         *
+         * @param item {CurationItem}
+         * @param imageViewer {CurationViewer}
+         * @param curationList {CurationListView}
+         */
+        constructor(item, imageViewer, curationList) {
+            super();
+            this.item = item;
+            this.imageViewer = imageViewer;
+            this.curationList = curationList;
+
+            // 必要なclassを追加
+            this.classList.add('collection-item', 'curation-list-item');
+
+            this.onclick = () => {
+                // 表示
+                this.imageViewer.show(this.item);
+                // deactivate
+                this.curationList.deactivate();
+                // activate
+                this.classList.toggle('active');
+            }
+        }
+
+        /**
+         * 要素が DOM から削除されるたびに呼び出されます。
+         * クリーンアップ コードの実行（イベント リスナーの削除など）に役立ちます。
+         * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
+         */
+        disconnectedCallback() {
+            // メモリ開放
+            // this.item.free();
+        }
+
+        /**
+         * 要素が DOM に挿入されるたびに呼び出されます。
+         * リソースの取得やレンダリングなどの、セットアップ コードの実行に役立ちます。
+         * 一般に、この時点まで作業を遅らせるようにする必要があります。
+         * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
+         */
+        connectedCallback() {
+            this.innerText = this.item.label();
+
+            // todo 操作ボタンの配置
+        }
+    }
+
+    customElements.define('curation-list-item', CurationListViewItem, {extends: 'li'});
+
+    /**
+     * キュレーション用ListView
+     */
+    class CurationListView extends HTMLUListElement {
+        constructor(imageViewer) {
+            super();
+
+            // 必要なclassを追加
+            this.classList.add('collection', 'with-header', 'curation-list');
+
+            this.imageViewer = imageViewer;
+        }
+
+        onOff() {
+            this.classList.toggle('hide');
+
+            const a = this.imageViewer.listViewIcon;
+            if (!this.classList.contains('hide')) {
+                a.classList.add('available');
+            } else {
+                a.classList.remove('available');
+            }
+        }
+
+        /**
+         * 要素が DOM に挿入されるたびに呼び出されます。
+         * リソースの取得やレンダリングなどの、セットアップ コードの実行に役立ちます。
+         * 一般に、この時点まで作業を遅らせるようにする必要があります。
+         * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
+         */
+        connectedCallback() {
+        }
+
+        /**
+         * 子要素をdeactivateする
+         */
+        deactivate() {
+            const children = this.children;
+            for (const child of children) {
+                child.classList.remove('active');
+            }
+        }
+
+        /**
+         * 特定の子要素のみをactivateする
+         * @param index
+         */
+        activate(index) {
+            this.deactivate();
+            const item = this.children[index];
+            item.classList.add('active');
+        }
+
+        /**
+         * 子要素を追加する。
+         * @param newChild {CurationItem} リストの子要素の元となるデータ
+         */
+        appendChild(newChild) {
+            if (newChild instanceof CurationItem) {
+                const child = new CurationListViewItem(newChild, this.imageViewer, this);
+                super.appendChild(child);
+            }
+        }
+
+        getChild(index) {
+            return this.querySelectorAll('.image-list-item')[index];
+        }
+    }
+
+    customElements.define('curation-list', CurationListView, {extends: 'ul'});
+
+    /**
      * キュレーション一覧
      */
     class CurationViewer extends BasicViewer {
@@ -1264,20 +1386,47 @@ async function run() {
                 },
             });
 
-            // viewsを設定
-            const views = document.createElement('view-s');
-            this.views = views;
-            this.appendChild(views);
-
             // todo listview, iconviewを設定
+            const views = new Views();
+            this.appendChild(views);
+            this.views = views;
+
+            const listView = new CurationListView(this);
+            views.appendChild(listView);
+            this.listView = listView;
 
             // viewerを設定
             this.viewer = new WasmCurationViewer(this.viewerCanvas);
         }
 
+        cropping() {
+            if (this.oncrop) {
+                this.oncrop = false;
+            } else {
+                this.oncrop = true;
+            }
+            this.croppingIcon.classList.toggle('available');
+        }
+
+        /**
+         * 指定されたデータを持つitemを表示する
+         * @param item {CurationItem}
+         */
+        show(item) {
+            let index = this.viewer.show(item);
+            this.listView.activate(index);
+        }
+
+        /**
+         * 要素を追加する
+         * @param item {CurationItem}
+         */
         push = (item) => {
             this.viewer.push(item);
             this.viewer.show_last();
+
+            this.listView.appendChild(item);
+
             this.classList.remove('hide');
         }
 
