@@ -1097,6 +1097,8 @@ async function run() {
          * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
          */
         connectedCallback() {
+            viewerCounter++;
+
             if (CurationViewer.curationViewer) {
                 CurationViewer.curationViewer.remove();
             }
