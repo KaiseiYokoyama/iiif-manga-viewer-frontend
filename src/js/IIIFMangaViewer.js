@@ -321,7 +321,7 @@ async function run() {
             //     mangaViewer = mangaViewer.parentElement;
             //     if (!mangaViewer) return;
             // }
-            // this.imageViewer = mangaViewer;
+            // this.curationViewer = mangaViewer;
 
             // ドラッグ
             {
@@ -1009,13 +1009,13 @@ async function run() {
             // 必要なclassを追加
             this.classList.add('collection', 'with-header', 'curation-list');
 
-            this.imageViewer = imageViewer;
+            this.curationViewer = imageViewer;
         }
 
         onOff() {
             this.classList.toggle('hide');
 
-            const a = this.imageViewer.listViewIcon;
+            const a = this.curationViewer.listViewIcon;
             if (!this.classList.contains('hide')) {
                 a.classList.add('available');
             } else {
@@ -1030,6 +1030,12 @@ async function run() {
          * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
          */
         connectedCallback() {
+            this.sortable = Sortable.create(this, {
+                onEnd: (evt) => {
+                    let bool = this.curationViewer.swap(evt.oldIndex, evt.newIndex);
+                    console.log(bool);
+                }
+            })
         }
 
         /**
@@ -1058,7 +1064,7 @@ async function run() {
          */
         appendChild(newChild) {
             if (newChild instanceof CurationItem) {
-                const child = new CurationListViewItem(newChild, this.imageViewer, this);
+                const child = new CurationListViewItem(newChild, this.curationViewer, this);
                 super.appendChild(child);
             }
         }
@@ -1430,6 +1436,16 @@ async function run() {
             this.listView.appendChild(item);
 
             this.classList.remove('hide');
+        }
+
+        /**
+         * 要素の順序を入れ替える
+         * @param oldindex
+         * @param newindex
+         * @return {boolean}
+         */
+        swap = (oldindex, newindex) => {
+            return this.viewer.swap(oldindex, newindex)
         }
 
         move(newX, newY) {

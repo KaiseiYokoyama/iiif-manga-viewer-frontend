@@ -4,6 +4,7 @@ use crate::viewer::{Position, log, Canvas};
 use std::ops::{Range, RangeInclusive};
 
 use web_sys::{MouseEvent, HtmlImageElement, HtmlCanvasElement, CanvasRenderingContext2d, Element, Node};
+use crate::iiif_manifest::{Manifest, Image};
 
 #[wasm_bindgen]
 #[derive(Serialize, Deserialize, Clone)]
@@ -124,6 +125,17 @@ impl CurationItem {
     }
 }
 
+//impl From<Vec<CurationItem>> for Manifest {
+//    fn from(vec: Vec<CurationItem>) -> Self {
+//        let mut canvases = Vec::new();
+//        vec.iter().map(|v| => {
+//            let image = Image{
+//                id:
+//            }
+//        })
+//    }
+//}
+
 #[wasm_bindgen]
 pub struct WasmCurationViewer {
     canvas: Canvas,
@@ -164,6 +176,18 @@ impl WasmCurationViewer {
 
     pub fn remove(&mut self, index: usize) {
         self.items.remove(index);
+    }
+
+    pub fn swap(&mut self, oldindex: usize, newindex: usize) -> bool {
+        let items = &mut self.items;
+        if items.get(oldindex) == None || items.get(newindex) == None {
+            return false;
+        }
+
+        let item = items.remove(oldindex);
+        items.insert(newindex, item);
+
+        true
     }
 
     #[wasm_bindgen]
