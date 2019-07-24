@@ -20,10 +20,15 @@ pub struct CurationItem {
     crop: (RangeInclusive<u32>, RangeInclusive<u32>),
     /// 説明
     description: String,
+    #[serde(skip)]
     pub position_x: f64,
+    #[serde(skip)]
     pub position_y: f64,
+    #[serde(skip)]
     pub original_x: f64,
+    #[serde(skip)]
     pub original_y: f64,
+    #[serde(skip)]
     pub zoom: f64,
 }
 
