@@ -80,9 +80,10 @@ div#contents search-modal search-bar .card-content > .dropdown > .rows-wrapper.i
 }
 div#contents search-modal .cards {
   display: flex;
+  flex-wrap: wrap;
 }
 div#contents search-modal .cards .card {
-  width: 30%;
+  width: 29%;
   margin: 2%;
 }
 div#contents search-modal .cards .card .card-image img {

@@ -106,9 +106,10 @@ div#contents {
 
     .cards {
       display: flex;
+      flex-wrap: wrap;
 
       .card {
-        width: 30%;
+        width: 29%;
         margin: 2%;
         //height: 200px;
 
