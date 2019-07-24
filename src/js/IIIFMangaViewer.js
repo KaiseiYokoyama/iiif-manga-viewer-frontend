@@ -1654,6 +1654,7 @@ async function run() {
             }
             // todo post query
             let json = searchQuery.json();
+            this.clear();
             // todo remove sample
             // サンプル出力
             let sample = new SearchResult("https://www.dl.ndl.go.jp/api/iiif/2542527/manifest.json",
@@ -1678,20 +1679,34 @@ async function run() {
             this.appendCard(sampleCard1);
             this.appendCard(sampleCard2);
 
-            const url = '';
-            fetch(url, {
-                method: 'POST',
-                body: json,
-            }).then(res => {
-                return res.text()
-            }).then(text => {
-                const results = new SearchResults(text);
-                if (!results) return;
-                for (let i = 0; i < results.len(); i++) {
-                    const result = results.get(i);
-                }
-            }).catch(err => {
-            })
+            // const url = '/search';
+            // const headers = {
+            //     'Accept': 'application/json',
+            //     'Content-Type': 'application/json'
+            // };
+            // fetch(url, {
+            //     method: 'POST',
+            //     headers,
+            //     body: json,
+            // }).then(res => {
+            //     return res.text()
+            // }).then(text => {
+            //     const results = new SearchResults(text);
+            //     if (!results) return;
+            //     for (let i = 0; i < results.len(); i++) {
+            //         const result = results.get(i);
+            //         console.log(result.url());
+            //         this.appendCard(new SearchCard(result));
+            //     }
+            // }).catch(err => {
+            // })
+        }
+
+        /**
+         * 前回の検索結果を消去する
+         */
+        clear() {
+            this.cards.innerHTML = '';
         }
 
         appendChild(newChild) {
