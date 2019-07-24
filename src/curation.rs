@@ -190,6 +190,10 @@ impl WasmCurationViewer {
         true
     }
 
+    pub fn json(&self) -> Option<String> {
+        serde_json::to_string(&self.items).ok()
+    }
+
     #[wasm_bindgen]
     /// イメージを表示する
     pub fn show(&mut self, item: &CurationItem) -> usize {

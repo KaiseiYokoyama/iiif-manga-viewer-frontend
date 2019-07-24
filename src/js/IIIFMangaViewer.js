@@ -1032,8 +1032,10 @@ async function run() {
         connectedCallback() {
             this.sortable = Sortable.create(this, {
                 onEnd: (evt) => {
-                    let bool = this.curationViewer.swap(evt.oldIndex, evt.newIndex);
-                    console.log(bool);
+                    if (!this.curationViewer.swap(evt.oldIndex, evt.newIndex)) {
+                        M.Toast({html: '<i class="material-icons error left">error</i>Swap Failed'});
+                    }
+                    console.log(this.curationViewer.viewer.json());
                 }
             })
         }
