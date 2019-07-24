@@ -119,6 +119,16 @@ div#contents {
             height: 200px;
             object-fit: contain;
           }
+
+          .card-title {
+            max-width: 100%;
+            max-height: 100%;
+            overflow-y: scroll;
+
+            &::-webkit-scrollbar {
+              display: none;
+            }
+          }
         }
 
         .card-content {

@@ -4,7 +4,7 @@ use wasm_bindgen::JsCast;
 use web_sys::{Element, HtmlImageElement, HtmlCanvasElement, CanvasRenderingContext2d, MouseEvent, Node};
 use js_sys::Promise;
 
-use crate::iiif_manifest::Manifest;
+use crate::iiif_manifest::{Manifest, Label};
 use crate::view::{View, list_view::ListView, icon_view::IconView};
 
 #[wasm_bindgen]
@@ -197,7 +197,10 @@ impl Viewer {
     #[wasm_bindgen]
     pub fn label(&self) -> String {
         match &self.manifest {
-            Some(m) => &m.label,
+            Some(m) => match &m.label {
+                Label::String(s) => s,
+                Label::Vec(vec) => return serde_json::to_string(&vec[0]).unwrap(),
+            },
             None => "None",
         }.to_string()
     }

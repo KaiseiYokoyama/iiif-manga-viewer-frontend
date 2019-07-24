@@ -1,0 +1,124 @@
+{
+  "@type": "sc:Manifest",
+  "@id": "https://iiif.europeana.eu/presentation/9200518/ark__12148_btv1b83043196/manifest",
+  "@context": "http://iiif.io/api/presentation/2/context.json",
+  "label": [
+    {
+      "@value": "Kyôka surimono / Ill. Katsushika Hokusai, Keisai Eisen, Utagawa Toyokuni, Utagawa Kunisada, Utagawa Sadahide.狂歌摺物 / 葛飾北斎, 渓斎英泉, 歌川豐國, 歌川 国貞, 歌川 国安, 歌川貞秀画. Japonais 381 (155)"
+    }
+  ],
+  "description": [
+    {
+      "@value": "Appartient à l'ensemble documentaire : FranceJp0"
+    },
+    {
+      "@value": "Ancienne collection Johan Willem de Sturler"
+    }
+  ],
+  "metadata": [
+    {
+      "label": "format",
+      "value": [
+        {
+          "@value": "Surimono 摺物"
+        }
+      ]
+    },
+    {
+      "label": "relation",
+      "value": [
+        {
+          "@value": "Notice du catalogue : http://archivesetmanuscrits.bnf.fr/ark:/12148/cc11316j/ca59857546054039"
+        }
+      ]
+    },
+    {
+      "label": "type",
+      "value": [
+        {
+          "@language": "fre",
+          "@value": "image fixe"
+        },
+        {
+          "@language": "eng",
+          "@value": "still image"
+        }
+      ]
+    },
+    {
+      "label": "language",
+      "value": [
+        {
+          "@value": "jpn"
+        }
+      ]
+    },
+    {
+      "label": "source",
+      "value": [
+        {
+          "@value": "Bibliothèque nationale de France. Département des manuscrits. Japonais 381 (155)"
+        }
+      ]
+    }
+  ],
+  "thumbnail": {
+    "@type": "dctypes:Image",
+    "@id": "https://api.europeana.eu/api/v2/thumbnail-by-url.json?uri=https%3A%2F%2Fgallica.bnf.fr%2Fiiif%2Fark%3A%2F12148%2Fbtv1b83043196%2Ff1%2Ffull%2F512%2C%2F0%2Fnative.jpg&type=IMAGE"
+  },
+  "attribution": "Kyôka surimono / Ill. Katsushika Hokusai, Keisai Eisen, Utagawa Toyokuni, Utagawa Kunisada, Utagawa Sadahide.狂歌摺物 / 葛飾北斎, 渓斎英泉, 歌川豐國, 歌川 国貞, 歌川 国安, 歌川貞秀画. Japonais 381 (155) - https://www.europeana.eu/portal/record/9200518/ark__12148_btv1b83043196.html. Katsushika, Hokusai (1760-1849). Illustrateur. (fr) Bibliothèque nationale de France - http://gallica.bnf.fr/ark:/12148/btv1b83043196. No Copyright - Other Known Legal Restrictions - http://rightsstatements.org/vocab/NoC-OKLR/1.0/",
+  "license": "http://rightsstatements.org/vocab/NoC-OKLR/1.0/",
+  "logo": "https://style.europeana.eu/images/europeana-logo-default.png",
+  "seeAlso": [
+    {
+      "@id": "https://www.europeana.eu/api/v2/record/9200518/ark__12148_btv1b83043196.json-ld",
+      "format": "application/ld+json",
+      "profile": "http://www.europeana.eu/schemas/edm/"
+    },
+    {
+      "@id": "https://www.europeana.eu/api/v2/record/9200518/ark__12148_btv1b83043196.json",
+      "format": "application/json",
+      "profile": "http://www.europeana.eu/schemas/edm/"
+    },
+    {
+      "@id": "https://www.europeana.eu/api/v2/record/9200518/ark__12148_btv1b83043196.rdf",
+      "format": "application/rdf+xml",
+      "profile": "http://www.europeana.eu/schemas/edm/"
+    }
+  ],
+  "sequences": [
+    {
+      "@type": "sc:Sequence",
+      "@id": "https://iiif.europeana.eu/presentation/9200518/ark__12148_btv1b83043196/sequence/s1",
+      "label": "Current Page Order",
+      "startCanvas": "https://iiif.europeana.eu/presentation/9200518/ark__12148_btv1b83043196/canvas/p1",
+      "canvases": [
+        {
+          "@type": "sc:Canvas",
+          "@id": "https://iiif.europeana.eu/presentation/9200518/ark__12148_btv1b83043196/canvas/p1",
+          "label": "p. 1",
+          "height": 1024,
+          "width": 686,
+          "attribution": "Kyôka surimono / Ill. Katsushika Hokusai, Keisai Eisen, Utagawa Toyokuni, Utagawa Kunisada, Utagawa Sadahide.狂歌摺物 / 葛飾北斎, 渓斎英泉, 歌川豐國, 歌川 国貞, 歌川 国安, 歌川貞秀画. Japonais 381 (155) - https://www.europeana.eu/portal/record/9200518/ark__12148_btv1b83043196.html. Katsushika, Hokusai (1760-1849). Illustrateur. (fr) Bibliothèque nationale de France - http://gallica.bnf.fr/ark:/12148/btv1b83043196. No Copyright - Other Known Legal Restrictions - http://rightsstatements.org/vocab/NoC-OKLR/1.0/",
+          "images": [
+            {
+              "@type": "oa:Annotation",
+              "@id": "https://iiif.europeana.eu/presentation/9200518/ark__12148_btv1b83043196/annotation/p1",
+              "motivation": "sc:painting",
+              "resource": {
+                "@type": "dctypes:Image",
+                "@id": "http://gallica.bnf.fr/iiif/ark:/12148/btv1b83043196/f1/full/512,/0/native.jpg",
+                "service": {
+                  "@id": "http://gallica.bnf.fr/iiif/ark:/12148/btv1b83043196/f1",
+                  "profile": "http://iiif.io/api/image/2/level2.json",
+                  "@context": "http://iiif.io/api/image/2/context.json"
+                }
+              },
+              "on": "https://iiif.europeana.eu/presentation/9200518/ark__12148_btv1b83043196/canvas/p1"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
