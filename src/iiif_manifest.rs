@@ -8,6 +8,31 @@ pub trait ManifestSubstructure {
     fn to_image_list(&self) -> Vec<Element>;
 }
 
+#[cfg(test)]
+mod test {
+    use crate::iiif_manifest::Manifest;
+
+    #[test]
+    fn parse_europeana_test() {
+        let manifest = serde_json::from_str::<Manifest>(include_str!("../test/hokusai.json"));
+        match &manifest {
+            Err(e) => println!("{:?}", &e),
+            _ => {}
+        }
+        assert!(manifest.is_ok());
+    }
+
+    #[test]
+    fn parse_europeana_test2() {
+        let manifest = serde_json::from_str::<Manifest>(include_str!("../test/hokusai2.json"));
+        match &manifest {
+            Err(e) => println!("{:?}", &e),
+            _ => {}
+        }
+        assert!(manifest.is_ok());
+    }
+}
+
 #[derive(Deserialize, Debug, Serialize)]
 pub struct Manifest {
     #[serde(rename = "@context")]
@@ -16,11 +41,24 @@ pub struct Manifest {
     id: String,
     #[serde(rename = "@type")]
     type_: String,
-    pub label: String,
+    pub label: Label,
     license: Option<String>,
     attribution: Option<String>,
-    description: Option<String>,
+    description: Option<Label>,
     sequences: Vec<Sequence>,
+}
+
+#[derive(Deserialize, Debug, Serialize)]
+#[serde(untagged)]
+pub enum Label {
+    String(String),
+    Vec(Vec<EuropeanaContent>),
+}
+
+#[derive(Deserialize, Debug, Serialize)]
+pub struct EuropeanaContent {
+    #[serde(rename = "@value")]
+    pub value: String
 }
 
 impl Manifest {
@@ -146,9 +184,9 @@ struct Resource {
     id: String,
     #[serde(rename = "@type")]
     type_: String,
-    format: String,
-    width: u32,
-    height: u32,
+    format: Option<String>,
+    width: Option<u32>,
+    height: Option<u32>,
     service: Service,
 }
 

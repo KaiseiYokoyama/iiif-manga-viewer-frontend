@@ -1,21 +1,23 @@
+"use strict";
+
 import init, {
     Viewer,
     Direction,
     SearchQuery,
     SearchResult,
-    SearchResults
+    SearchResults,
+    CurationItem,
+    WasmCurationViewer,
 } from '../../pkg/iiif_manga_viewer_frontend.js';
-
-let open = (url) => {
-    const viewers = document.getElementById('viewers');
-    let viewer = document.createElement('div');
-    viewer.innerHTML = '<div is="iiif-manga-viewer" manifest="' + url + '"></div>';
-    viewer = viewer.firstElementChild;
-    viewers.appendChild(viewer);
-};
 
 async function run() {
     await init();
+
+    let open = (url) => {
+        const viewers = document.getElementById('viewers');
+        let viewer = new IIIFMangaViewer(url);
+        viewers.appendChild(viewer);
+    };
 
     let viewerCounter = 0;
 
@@ -116,9 +118,9 @@ async function run() {
 
             const a = this.mangaViewer.iconViewIcon;
             if (!this.classList.contains('hide')) {
-                a.classList.add('view-available');
+                a.classList.add('available');
             } else {
-                a.classList.remove('view-available');
+                a.classList.remove('available');
             }
         }
 
@@ -231,9 +233,9 @@ async function run() {
 
             const a = this.mangaViewer.listViewIcon;
             if (!this.classList.contains('hide')) {
-                a.classList.add('view-available');
+                a.classList.add('available');
             } else {
-                a.classList.remove('view-available');
+                a.classList.remove('available');
             }
         }
 
@@ -294,6 +296,170 @@ async function run() {
     customElements.define("image-list", ListView, {extends: "ul"});
 
     /**
+     * ビューアのCanvas
+     */
+    class ViewerCanvas extends HTMLElement {
+        constructor(imageViewer) {
+            super();
+            this.imageViewer = imageViewer;
+        }
+
+        /**
+         * 要素が DOM に挿入されるたびに呼び出されます。
+         * リソースの取得やレンダリングなどの、セットアップ コードの実行に役立ちます。
+         * 一般に、この時点まで作業を遅らせるようにする必要があります。
+         * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
+         */
+        connectedCallback() {
+            this.area = document.createElement('div');
+            this.area.classList.add('area', 'hide');
+            super.appendChild(this.area);
+
+            // 自分の所属するビューアを登録しておく
+            // let mangaViewer = this;
+            // while (!(mangaViewer instanceof IIIFMangaViewer || mangaViewer instanceof CurationViewer)) {
+            //     mangaViewer = mangaViewer.parentElement;
+            //     if (!mangaViewer) return;
+            // }
+            // this.curationViewer = mangaViewer;
+
+            // ドラッグ
+            {
+                this.addEventListener('mousedown', (event) => {
+                    if (this.imageViewer.oncrop) {
+                        this.cropStart(event);
+                    } else {
+                        this.imageViewer.viewer.move_mousedown(event);
+                    }
+                });
+                this.addEventListener('mousemove', (event) => {
+                    if (this.imageViewer.oncrop) {
+                        this.cropping(event);
+                    } else {
+                        let position = this.imageViewer.viewer.move_mousemove(event);
+                        if (position) {
+                            this.imageViewer.move(position.x, position.y);
+                            position.free();
+                        }
+                    }
+                });
+                this.addEventListener('mouseup', (event) => {
+                    if (this.imageViewer.oncrop) {
+                        this.crop(event);
+                        this.imageViewer.cropping();
+                    } else {
+                        this.imageViewer.viewer.move_mouseup();
+                    }
+                });
+            }
+        }
+
+        getImage() {
+            return this.image;
+        }
+
+        cropStart = (event) => {
+            if (event.target !== this.image) return;
+            this.area.classList.remove('hide');
+
+            this.cropOrigin = event;
+            this.area.style.top = event.offsetY + this.image.offsetTop + 'px';
+            this.area.style.bottom = event.offsetY + this.image.offsetTop + 'px';
+            this.area.style.left = event.offsetX + this.image.offsetLeft + 'px';
+            this.area.style.right = event.offsetX + this.image.offsetLeft + 'px';
+        };
+
+        cropping = (event) => {
+            if (event.target !== this.image || !this.cropOrigin) return;
+
+            let origin = this.cropOrigin;
+            let top, bottom, left, right;
+            if (origin.offsetX < event.offsetX) {
+                left = origin.offsetX;
+                right = event.offsetX;
+            } else {
+                right = origin.offsetX;
+                left = event.offsetX;
+            }
+            if (origin.offsetY < event.offsetY) {
+                top = origin.offsetY;
+                bottom = event.offsetY;
+            } else {
+                bottom = origin.offsetY;
+                top = event.offsetY;
+            }
+            this.area.style.top = top + this.image.offsetTop + 'px';
+            this.area.style.height = (bottom - top) + 'px';
+            this.area.style.left = left + this.image.offsetLeft + 'px';
+            this.area.style.width = (right - left) + 'px';
+        };
+
+        crop = (event) => {
+            let origin = this.cropOrigin;
+            if (event.target !== this.image || !origin) {
+                console.log('out of target');
+                console.log(event.target);
+                console.log(origin);
+            } else {
+                let manifestID = this.imageViewer.getAttribute('manifest');
+                if (!manifestID) {
+                    manifestID = this.imageViewer.viewer.now().manifest_id();
+                }
+                let imageID = this.image.src;
+                let item = new CurationItem(manifestID, imageID, this.imageViewer.viewer.label() + '_' + this.imageViewer.viewer.image_label(), origin, event, this.image);
+                // crop image
+                {
+                    let canvas = document.createElement('canvas');
+                    let [sx, sy, sw, sh, dx, dy, dw, dh] =
+                        [
+                            item.get_x_start(),
+                            item.get_y_start(),
+                            item.get_x_end() - item.get_x_start(),
+                            item.get_y_end() - item.get_y_start(),
+                            0,
+                            0,
+                            item.get_x_end() - item.get_x_start(),
+                            item.get_y_end() - item.get_y_start()
+                        ];
+                    canvas.width = dw;
+                    canvas.height = dh;
+                    canvas.getContext('2d').drawImage(this.image, sx, sy, sw, sh, dx, dy, dw, dh);
+
+                    let img = new Image();
+                    img.src = canvas.toDataURL('image/png');
+
+                    item.set_image(img);
+                    CurationViewer.curationViewer.push(item);
+                }
+            }
+
+            this.area.classList.add('hide');
+            // finish
+            // this.cropOrigin = undefined;
+        };
+
+        appendChild(newChild) {
+            if (newChild instanceof HTMLImageElement) {
+                if (this.image) this.image.remove();
+
+                newChild.addEventListener('mousedown', (event) => {
+                    event.preventDefault();
+                });
+                newChild.addEventListener('mousemove', (event) => {
+                    event.preventDefault();
+                });
+                newChild.addEventListener('mouseup', (event) => {
+                    event.preventDefault();
+                });
+                this.image = newChild;
+                super.appendChild(newChild);
+            }
+        }
+    }
+
+    customElements.define('viewer-canvas', ViewerCanvas);
+
+    /**
      * Viewをまとめて配置するelement
      */
     class Views extends HTMLElement {
@@ -314,10 +480,10 @@ async function run() {
 
         /**
          * 子要素を追加する。View以外は無視。
-         * @param newChild {ListView,IconView} 子要素
+         * @param newChild {ListView,IconView, CurationListView} 子要素
          */
         appendChild(newChild) {
-            if (newChild instanceof ListView || newChild instanceof IconView || newChild instanceof SearchModal) {
+            if (newChild instanceof ListView || newChild instanceof IconView || newChild instanceof CurationListView) {
                 super.appendChild(newChild);
             }
         }
@@ -326,11 +492,34 @@ async function run() {
     customElements.define("view-s", Views);
 
     /**
-     * ビューア本体
+     * ビューアの基礎
      */
-    class IIIFMangaViewer extends HTMLDivElement {
+    class BasicViewer extends HTMLElement {
         constructor() {
             super();
+        }
+
+        cropping() {
+            if (this.oncrop) {
+                this.oncrop = false;
+            } else {
+                this.oncrop = true;
+            }
+            this.croppingIcon.classList.toggle('available');
+        }
+    }
+
+    customElements.define('basic-viewer', BasicViewer);
+
+    /**
+     * ビューア本体
+     */
+    class IIIFMangaViewer extends BasicViewer {
+        constructor(url) {
+            super();
+            if (url) {
+                this.setAttribute('manifest', url);
+            }
             // this.initialize();
         }
 
@@ -369,15 +558,15 @@ async function run() {
         connectedCallback() {
             viewerCounter++;
 
-            // 子要素をすべて削除
-            this.textContent = null;
-
             // card
             this.classList.add('card');
 
             // canvasを設定
-            const canvas = document.createElement('canvas');
-            this.appendChild(canvas);
+            // const canvas = document.createElement('canvas');
+            // this.appendChild(canvas);
+            const viewerCanvas = new ViewerCanvas(this);
+            this.viewerCanvas = viewerCanvas;
+            this.appendChild(viewerCanvas);
 
             // navbar
             let viewDropdownTrigger, filterDropdownTrigger, filterDropdown;
@@ -421,7 +610,7 @@ async function run() {
                 {
                     const li = document.createElement('li');
                     const a = document.createElement('a');
-                    a.classList.add('view-available');
+                    a.classList.add('available');
                     a.innerHTML =
                         '<i class="material-icons">view_list</i>';
                     a.onclick = () => {
@@ -455,6 +644,18 @@ async function run() {
                     const li = document.createElement('li');
                     const a = document.createElement('a');
                     a.innerHTML =
+                        '<i class="material-icons">crop</i>';
+                    this.croppingIcon = a;
+                    a.onclick = () => {
+                        this.cropping();
+                    };
+                    li.appendChild(a);
+                    ulR.appendChild(li);
+                }
+                {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.innerHTML =
                         '<i class="material-icons">save_alt</i>';
                     a.onclick = () => {
                         let base64ToBlob = (base64) => {
@@ -474,6 +675,12 @@ async function run() {
                             }
                             return blob;
                         };
+
+                        const image = viewerCanvas.image;
+                        const canvas = document.createElement('canvas');
+                        canvas.width = image.width;
+                        canvas.height = image.height;
+                        canvas.getContext("2d").drawImage(image, 0, 0);
 
                         const link = document.createElement('a');
                         link.style.display = 'none';
@@ -507,7 +714,7 @@ async function run() {
                     dropdown.classList.add('dropdown-content', 'filter-dropdown');
                     let brightness, contrast, gradient, greyscale, invert;
                     let onchange = () => {
-                        canvas.style.filter =
+                        viewerCanvas.style.filter =
                             'brightness(' + brightness.value + '%) ' +
                             'contrast(' + contrast.value + '%) ' +
                             'grayscale(' + greyscale.value + '%) ' +
@@ -650,29 +857,7 @@ async function run() {
 
 
             // viewerを設定
-            this.viewer = new Viewer(canvas, listView, iconView);
-            {
-                canvas.onmousedown = (event) => {
-                    this.viewer.mousedown(event);
-                };
-                canvas.onmousemove = (event) => {
-                    this.viewer.mousemove(event);
-                };
-                canvas.onmouseup = (event) => {
-                    this.viewer.mouseup(event);
-                };
-                canvas.onclick = (event) => {
-                    let direction = this.viewer.click(event);
-                    switch (direction) {
-                        case Direction.Left:
-                            this.next();
-                            break;
-                        case Direction.Right:
-                            this.prev();
-                            break;
-                    }
-                };
-            }
+            this.viewer = new Viewer(viewerCanvas, listView, iconView);
 
             const manifestURL = this.getAttribute('manifest');
             if (manifestURL) {
@@ -708,6 +893,15 @@ async function run() {
             }
         }
 
+        cropping() {
+            if (this.oncrop) {
+                this.oncrop = false;
+            } else {
+                this.oncrop = true;
+            }
+            this.croppingIcon.classList.toggle('available');
+        }
+
         progress() {
             let div = document.createElement('div');
             div.innerHTML =
@@ -741,9 +935,595 @@ async function run() {
         prev() {
             this.show(this.viewer.index - 1);
         };
+
+        // 表示中のイメージを動かす
+        move(newX, newY) {
+            let image = this.viewerCanvas.getImage();
+            image.style.transform = 'translate(' + newX + 'px,' + newY + 'px)';
+        }
     }
 
-    customElements.define("iiif-manga-viewer", IIIFMangaViewer, {extends: "div"});
+    customElements.define("iiif-manga-viewer", IIIFMangaViewer);
+
+    /**
+     * キュレーション用ListViewItem
+     */
+    class CurationListViewItem extends HTMLLIElement {
+        /**
+         *
+         * @param item {CurationItem}
+         * @param imageViewer {CurationViewer}
+         * @param curationList {CurationListView}
+         */
+        constructor(item, imageViewer, curationList) {
+            super();
+            this.item = item;
+            this.imageViewer = imageViewer;
+            this.curationList = curationList;
+
+            // 必要なclassを追加
+            this.classList.add('collection-item', 'curation-list-item');
+
+            this.onclick = () => {
+                // 表示
+                this.imageViewer.show(this.item);
+                // deactivate
+                this.curationList.deactivate();
+                // activate
+                this.classList.toggle('active');
+            }
+        }
+
+        /**
+         * 要素が DOM から削除されるたびに呼び出されます。
+         * クリーンアップ コードの実行（イベント リスナーの削除など）に役立ちます。
+         * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
+         */
+        disconnectedCallback() {
+            // メモリ開放
+            // this.item.free();
+        }
+
+        /**
+         * 要素が DOM に挿入されるたびに呼び出されます。
+         * リソースの取得やレンダリングなどの、セットアップ コードの実行に役立ちます。
+         * 一般に、この時点まで作業を遅らせるようにする必要があります。
+         * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
+         */
+        connectedCallback() {
+            this.innerText = this.item.label();
+
+            // todo 操作ボタンの配置
+        }
+    }
+
+    customElements.define('curation-list-item', CurationListViewItem, {extends: 'li'});
+
+    /**
+     * キュレーション用ListView
+     */
+    class CurationListView extends HTMLUListElement {
+        constructor(imageViewer) {
+            super();
+
+            // 必要なclassを追加
+            this.classList.add('collection', 'with-header', 'curation-list');
+
+            this.curationViewer = imageViewer;
+        }
+
+        onOff() {
+            this.classList.toggle('hide');
+
+            const a = this.curationViewer.listViewIcon;
+            if (!this.classList.contains('hide')) {
+                a.classList.add('available');
+            } else {
+                a.classList.remove('available');
+            }
+        }
+
+        /**
+         * 要素が DOM に挿入されるたびに呼び出されます。
+         * リソースの取得やレンダリングなどの、セットアップ コードの実行に役立ちます。
+         * 一般に、この時点まで作業を遅らせるようにする必要があります。
+         * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
+         */
+        connectedCallback() {
+            this.sortable = Sortable.create(this, {
+                onEnd: (evt) => {
+                    if (!this.curationViewer.swap(evt.oldIndex, evt.newIndex)) {
+                        M.Toast({html: '<i class="material-icons error left">error</i>Swap Failed'});
+                    }
+                    console.log(this.curationViewer.viewer.json());
+                }
+            })
+        }
+
+        /**
+         * 子要素をdeactivateする
+         */
+        deactivate() {
+            const children = this.children;
+            for (const child of children) {
+                child.classList.remove('active');
+            }
+        }
+
+        /**
+         * 特定の子要素のみをactivateする
+         * @param index
+         */
+        activate(index) {
+            this.deactivate();
+            const item = this.children[index];
+            item.classList.add('active');
+        }
+
+        /**
+         * 子要素を追加する。
+         * @param newChild {CurationItem} リストの子要素の元となるデータ
+         */
+        appendChild(newChild) {
+            if (newChild instanceof CurationItem) {
+                const child = new CurationListViewItem(newChild, this.curationViewer, this);
+                super.appendChild(child);
+            }
+        }
+
+        getChild(index) {
+            return this.querySelectorAll('.image-list-item')[index];
+        }
+    }
+
+    customElements.define('curation-list', CurationListView, {extends: 'ul'});
+
+    /**
+     * キュレーション一覧
+     */
+    class CurationViewer extends BasicViewer {
+        static curationViewer = undefined;
+
+        constructor() {
+            super();
+        }
+
+        /**
+         * 要素が DOM から削除されるたびに呼び出されます。
+         * クリーンアップ コードの実行（イベント リスナーの削除など）に役立ちます。
+         * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
+         */
+        disconnectedCallback() {
+            // メモリ開放
+            this.viewer.free();
+        }
+
+        /**
+         * 要素が DOM に挿入されるたびに呼び出されます。
+         * リソースの取得やレンダリングなどの、セットアップ コードの実行に役立ちます。
+         * 一般に、この時点まで作業を遅らせるようにする必要があります。
+         * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
+         */
+        connectedCallback() {
+            viewerCounter++;
+
+            // 一番最初にDOMに挿入されたCurationViewerが規定のCurationViewerになる
+            if (!CurationViewer.curationViewer) {
+                CurationViewer.curationViewer = this;
+                this.classList.add('default', 'hide');
+            }
+
+            // card
+            this.classList.add('card');
+
+            // canvasを設定
+            const viewerCanvas = new ViewerCanvas(this);
+            this.viewerCanvas = viewerCanvas;
+            this.appendChild(viewerCanvas);
+
+            // navbar
+            let viewDropdownTrigger, filterDropdownTrigger, filterDropdown;
+            const navBar = document.createElement('nav');
+            {
+                const navWrapper = document.createElement('div');
+                navWrapper.classList.add('nav-wrapper');
+
+                const ulL = document.createElement('ul');
+                ulL.classList.add('left', 'toolbar-icons');
+                {
+                    const id = 'views-dropdown' + viewerCounter;
+
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    viewDropdownTrigger = a;
+                    a.classList.add('dropdown-trigger');
+                    a.setAttribute('data-target', id);
+                    a.innerHTML = '<i class="material-icons">menu</i>';
+                    li.appendChild(a);
+                    ulL.appendChild(li);
+
+                    const dropdown = document.createElement('ul');
+                    dropdown.classList.add('dropdown-content');
+                    dropdown.id = id;
+                    {
+                        const li = document.createElement('li');
+                        const a = document.createElement('a');
+                        a.classList.add('close');
+                        a.innerHTML =
+                            '<i class="material-icons">close</i>Close';
+                        if (CurationViewer.curationViewer === this) {
+                            a.onclick = () => {
+                                this.classList.toggle('hide');
+                            };
+                        } else {
+                            a.onclick = () => {
+                                this.remove();
+                            };
+                        }
+                        li.appendChild(a);
+                        dropdown.appendChild(li);
+                    }
+                    {
+                        const li = document.createElement('li');
+                        const a = document.createElement('a');
+                        a.classList.add('save_json');
+                        a.innerHTML =
+                            '<i class="material-icons">save</i>Save Curation';
+                        a.onclick = () => {
+                            const jsonBlob = new Blob([this.viewer.json()], {type: "text/plain;charset=utf-8"});
+
+                            const link = document.createElement('a');
+                            link.classList.add('hide');
+                            document.body.appendChild(link);
+
+                            link.href = URL.createObjectURL(jsonBlob);
+                            link.download = 'Curation.json';
+
+                            link.click();
+
+                            link.remove();
+                        };
+                        li.appendChild(a);
+                        dropdown.appendChild(li);
+                    }
+
+                    navBar.appendChild(dropdown);
+                }
+                {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.classList.add('available');
+                    a.innerHTML =
+                        '<i class="material-icons">view_list</i>';
+                    a.onclick = () => {
+                        this.listView.onOff();
+                    };
+                    this.listViewIcon = a;
+                    li.appendChild(a);
+                    ulL.appendChild(li);
+                }
+                navWrapper.appendChild(ulL);
+
+                const label = document.createElement('span');
+                if (CurationViewer.curationViewer === this) {
+                    label.innerText = 'Curation Viewer (Default)';
+                } else {
+                    label.innerText = 'Curation Viewer';
+                }
+                this.label = label;
+                navWrapper.appendChild(label);
+
+                const ulR = document.createElement('ul');
+                ulR.classList.add('right', 'toolbar-icons');
+                {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.innerHTML =
+                        '<i class="material-icons">crop</i>';
+                    this.croppingIcon = a;
+                    a.onclick = () => {
+                        this.cropping();
+                    };
+                    li.appendChild(a);
+                    ulR.appendChild(li);
+                }
+                {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.innerHTML =
+                        '<i class="material-icons">save_alt</i>';
+                    a.onclick = () => {
+                        let base64ToBlob = (base64) => {
+                            let blob;
+                            let bin = atob(base64.replace(/^.*,/, ""));
+                            let buffer = new Uint8Array(bin.length);
+                            for (let i = 0; i < bin.length; i++) {
+                                buffer[i] = bin.charCodeAt(i);
+                            }
+                            // Blobを作成
+                            try {
+                                blob = new Blob([buffer.buffer], {
+                                    type: "image/png"
+                                });
+                            } catch (e) {
+                                return false;
+                            }
+                            return blob;
+                        };
+
+                        const image = viewerCanvas.image;
+                        const canvas = document.createElement('canvas');
+                        canvas.width = image.width;
+                        canvas.height = image.height;
+                        canvas.getContext("2d").drawImage(image, 0, 0);
+
+                        const link = document.createElement('a');
+                        link.style.display = 'none';
+                        const base64 = canvas.toDataURL('image/png').split(',')[1];
+                        link.href = window.URL.createObjectURL(base64ToBlob(base64));
+                        link.download = this.viewer.label() + ' ' + this.viewer.index + '.png';
+                        document.body.appendChild(link);
+
+                        link.click();
+                    };
+                    li.appendChild(a);
+                    ulR.appendChild(li);
+                }
+                {
+                    const id = 'filters-dropdown' + viewerCounter;
+
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    filterDropdownTrigger = a;
+                    a.classList.add('dropdown-trigger');
+                    a.setAttribute('data-target', id);
+                    a.innerHTML =
+                        '<i class="material-icons">tune</i>';
+                    li.appendChild(a);
+                    ulR.appendChild(li);
+
+                    // dropdown-content
+                    const dropdown = document.createElement('ul');
+                    filterDropdown = dropdown;
+                    dropdown.id = id;
+                    dropdown.classList.add('dropdown-content', 'filter-dropdown');
+                    let brightness, contrast, gradient, greyscale, invert;
+                    let onchange = () => {
+                        viewerCanvas.style.filter =
+                            'brightness(' + brightness.value + '%) ' +
+                            'contrast(' + contrast.value + '%) ' +
+                            'grayscale(' + greyscale.value + '%) ' +
+                            'saturate(' + gradient.value + '%) ' +
+                            'invert(' + invert.value + '%) ';
+                    };
+                    {
+                        // brightness
+                        const li = document.createElement('li');
+                        li.innerHTML =
+                            '<div class="input-field">' +
+                            '   <i class="material-icons prefix">brightness_low</i> ' +
+                            '   <form action="#">' +
+                            '       <label>Brightness</label>' +
+                            '       <p class="range-field">' +
+                            '           <input type="range" value="100" min="0" max="200" />' +
+                            '       </p>' +
+                            '   </form>' +
+                            '</div>';
+                        brightness = li.querySelector('input');
+                        brightness.oninput = () => {
+                            onchange();
+                        };
+                        dropdown.appendChild(li);
+                    }
+                    {
+                        // contrast
+                        const li = document.createElement('li');
+                        li.innerHTML =
+                            '<div class="input-field">' +
+                            '   <i class="material-icons prefix">brightness_medium</i> ' +
+                            '   <form action="#">' +
+                            '       <label>Contrast</label>' +
+                            '       <p class="range-field">' +
+                            '           <input type="range" value="100" min="0" max="200" />' +
+                            '       </p>' +
+                            '   </form>' +
+                            '</div>';
+                        contrast = li.querySelector('input');
+                        contrast.oninput = () => {
+                            onchange();
+                        };
+                        dropdown.appendChild(li);
+                    }
+                    {
+                        // gradient
+                        const li = document.createElement('li');
+                        li.innerHTML =
+                            '<div class="input-field">' +
+                            '   <i class="material-icons prefix">gradient</i> ' +
+                            '   <form action="#">' +
+                            '       <label>Gradient</label>' +
+                            '       <p class="range-field">' +
+                            '           <input type="range" value="100" min="0" max="100" />' +
+                            '       </p>' +
+                            '   </form>' +
+                            '</div>';
+                        gradient = li.querySelector('input');
+                        gradient.oninput = () => {
+                            onchange();
+                        };
+                        dropdown.appendChild(li);
+                    }
+                    {
+                        // greyscale
+                        const li = document.createElement('li');
+                        li.innerHTML =
+                            '<div class="input-field">' +
+                            '   <i class="material-icons prefix">filter_b_and_w</i> ' +
+                            '   <form action="#">' +
+                            '       <label>Greyscale</label>' +
+                            '       <p class="range-field">' +
+                            '           <input type="range" value="0" min="0" max="100" />' +
+                            '       </p>' +
+                            '   </form>' +
+                            '</div>';
+                        greyscale = li.querySelector('input');
+                        greyscale.oninput = () => {
+                            onchange();
+                        };
+                        dropdown.appendChild(li);
+                    }
+                    {
+                        // invert
+                        const li = document.createElement('li');
+                        li.innerHTML =
+                            '<div class="input-field">' +
+                            '   <i class="material-icons prefix">invert_colors</i> ' +
+                            '   <form action="#">' +
+                            '       <label>Invert</label>' +
+                            '       <p class="range-field">' +
+                            '           <input type="range" value="0" min="0" max="100" />' +
+                            '       </p>' +
+                            '   </form>' +
+                            '</div>';
+                        invert = li.querySelector('input');
+                        invert.oninput = () => {
+                            onchange();
+                        };
+                        dropdown.appendChild(li);
+                    }
+                    navBar.appendChild(dropdown);
+                }
+                navWrapper.appendChild(ulR);
+
+                navBar.appendChild(navWrapper);
+            }
+            this.appendChild(navBar);
+
+            M.Dropdown.init(viewDropdownTrigger, {
+                constrainWidth: false,
+                coverTrigger: false,
+                closeOnClick: false,
+            });
+            M.Dropdown.init(filterDropdownTrigger, {
+                alignment: 'right',
+                constrainWidth: false,
+                coverTrigger: false,
+                closeOnClick: false,
+                onOpenEnd: () => {
+                    filterDropdown.style.width = '400px';
+                    M.Range.init(filterDropdown.querySelectorAll('input[type="range"]'), {});
+                },
+            });
+
+            // todo listview, iconviewを設定
+            const views = new Views();
+            this.appendChild(views);
+            this.views = views;
+
+            const listView = new CurationListView(this);
+            views.appendChild(listView);
+            this.listView = listView;
+
+            // viewerを設定
+            this.viewer = new WasmCurationViewer(this.viewerCanvas);
+        }
+
+        cropping() {
+            if (this.oncrop) {
+                this.oncrop = false;
+            } else {
+                this.oncrop = true;
+            }
+            this.croppingIcon.classList.toggle('available');
+        }
+
+        /**
+         * 指定されたデータを持つitemを表示する
+         * @param item {CurationItem}
+         */
+        show(item) {
+            let index = this.viewer.show(item);
+            this.listView.activate(index);
+        }
+
+        /**
+         * 要素を追加する
+         * @param item {CurationItem}
+         */
+        push = (item) => {
+            this.viewer.push(item);
+            this.viewer.show_last();
+
+            this.listView.appendChild(item);
+
+            this.classList.remove('hide');
+        }
+
+        /**
+         * 要素の順序を入れ替える
+         * @param oldindex
+         * @param newindex
+         * @return {boolean}
+         */
+        swap = (oldindex, newindex) => {
+            return this.viewer.swap(oldindex, newindex)
+        }
+
+        fromJson = (jsonText) => {
+            if (CurationViewer.curationViewer === this) {
+                return;
+            }
+            if (this.viewer.set_items(jsonText)) {
+                let promises = [];
+                for (let i = 0; i < this.viewer.size(); i++) {
+                    const promise = new Promise(() => {
+                        let item = this.viewer.get(i);
+                        const image = document.createElement('img');
+                        image.crossOrigin = "Anonymous";
+                        image.src = item.image_id();
+                        image.onload = () => {
+                            let canvas = document.createElement('canvas');
+                            let [sx, sy, sw, sh, dx, dy, dw, dh] =
+                                [
+                                    item.get_x_start(),
+                                    item.get_y_start(),
+                                    item.get_x_end() - item.get_x_start(),
+                                    item.get_y_end() - item.get_y_start(),
+                                    0,
+                                    0,
+                                    item.get_x_end() - item.get_x_start(),
+                                    item.get_y_end() - item.get_y_start()
+                                ];
+                            canvas.width = dw;
+                            canvas.height = dh;
+                            canvas.getContext('2d').drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh);
+
+                            let img = new Image();
+                            img.src = canvas.toDataURL('image/png');
+
+                            item.set_image(img);
+                            this.push(item);
+                            // resolve(item.label());
+                        }
+                    });
+                    promises.push(promise);
+                }
+
+                Promise.all(promises);
+
+            } else {
+                M.Toast({html: '<i class="material-icons error left">error</i>Parse Failed'});
+                this.remove();
+            }
+        }
+
+        move(newX, newY) {
+            let image = this.viewerCanvas.getImage();
+            image.style.transform = 'translate(' + newX + 'px,' + newY + 'px)';
+        }
+    }
+
+    customElements.define('curation-viewer', CurationViewer);
 
     /**
      * 検索バー
@@ -959,6 +1739,7 @@ async function run() {
             }
             // todo post query
             let json = searchQuery.json();
+            this.clear();
             // todo remove sample
             // サンプル出力
             let sample = new SearchResult("https://www.dl.ndl.go.jp/api/iiif/2542527/manifest.json",
@@ -983,20 +1764,34 @@ async function run() {
             this.appendCard(sampleCard1);
             this.appendCard(sampleCard2);
 
-            const url = '';
-            fetch(url, {
-                method: 'POST',
-                body: json,
-            }).then(res => {
-                return res.text()
-            }).then(text => {
-                const results = new SearchResults(text);
-                if (!results) return;
-                for (let i = 0; i < results.len(); i++) {
-                    const result = results.get(i);
-                }
-            }).catch(err => {
-            })
+            // const url = '/search';
+            // const headers = {
+            //     'Accept': 'application/json',
+            //     'Content-Type': 'application/json'
+            // };
+            // fetch(url, {
+            //     method: 'POST',
+            //     headers,
+            //     body: json,
+            // }).then(res => {
+            //     return res.text()
+            // }).then(text => {
+            //     const results = new SearchResults(text);
+            //     if (!results) return;
+            //     for (let i = 0; i < results.len(); i++) {
+            //         const result = results.get(i);
+            //         console.log(result.url());
+            //         this.appendCard(new SearchCard(result));
+            //     }
+            // }).catch(err => {
+            // })
+        }
+
+        /**
+         * 前回の検索結果を消去する
+         */
+        clear() {
+            this.cards.innerHTML = '';
         }
 
         appendChild(newChild) {
@@ -1056,13 +1851,9 @@ async function run() {
                 cardImage.appendChild(fab);
 
                 // onclick
-                fab.onclick = (event) => {
-                    const viewers = document.getElementById('viewers');
-                    let viewer = document.createElement('div');
-                    viewer.innerHTML = '<div is="iiif-manga-viewer" manifest="' + this.result.url() + '"></div>';
-                    viewer = viewer.firstElementChild;
-                    viewers.appendChild(viewer);
-                }
+                fab.onclick = () => {
+                    open(this.result.url());
+                };
             }
             this.appendChild(cardImage);
 
@@ -1179,6 +1970,85 @@ async function run() {
     }
 
     customElements.define('open-modal', OpenModal);
+
+    /**
+     * ファイルを読み取ってCurationViewerを開くmodal
+     */
+    class OpenCurationModal extends HTMLElement {
+        constructor() {
+            super();
+        }
+
+        /**
+         * 要素が DOM に挿入されるたびに呼び出されます。
+         * リソースの取得やレンダリングなどの、セットアップ コードの実行に役立ちます。
+         * 一般に、この時点まで作業を遅らせるようにする必要があります。
+         * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
+         */
+        connectedCallback() {
+            this.classList.add('modal');
+            M.Modal.init(this, {});
+
+            // content
+            const content = document.createElement('div');
+            content.classList.add('modal-content');
+            this.content = content;
+            super.appendChild(content);
+
+            // title
+            const title = document.createElement('h3');
+            title.innerHTML =
+                '<i class="material-icons left fontsize-inherit">description</i>Open Curation File';
+            this.appendChild(title);
+
+            // file input
+            const fileInput = document.createElement('div');
+            fileInput.classList.add('input-field', 'file-field');
+            fileInput.innerHTML =
+                '<div class="btn">\n' +
+                '   <span><i class="material-icons">description</i></span>\n' +
+                '   <input type="file" accept="application/json">\n' +
+                '</div>\n' +
+                '<div class="file-path-wrapper">\n' +
+                '   <input class="file-path validate" type="text">\n' +
+                '</div>';
+            this.appendChild(fileInput);
+            this.input = fileInput.querySelector('input[type="file"]');
+
+            // footer
+            const footer = document.createElement('div');
+            footer.classList.add('modal-footer');
+            this.footer = footer;
+            super.appendChild(footer);
+
+            // submit
+            const a = document.createElement('a');
+            a.classList.add('modal-close', 'waves-effect', 'waves-blue', 'btn-flat', 'secondary-color');
+            a.innerHTML =
+                '<i class="material-icons left">description</i>Open';
+            a.onclick = () => {
+                let reader = new FileReader();
+                reader.readAsText(this.input.files[0]);
+                reader.onload = () => {
+                    const cv = new CurationViewer();
+                    document.getElementById('viewers').appendChild(cv);
+                    cv.fromJson(reader.result);
+                }
+            };
+            this.footerAppendChild(a);
+        }
+
+        appendChild(newChild) {
+            this.content.appendChild(newChild);
+        }
+
+        footerAppendChild(newChild) {
+            this.footer.appendChild(newChild);
+        }
+    }
+
+    customElements.define('open-curation-modal', OpenCurationModal);
+
 }
 
 run();

@@ -16,7 +16,14 @@ body {
 
       .nav-menu {
         position: absolute;
-        right: 0;
+
+        &.right {
+          right: 0;
+        }
+
+        &.left {
+          left: 0;
+        }
       }
     }
   }
@@ -106,9 +113,10 @@ div#contents {
 
     .cards {
       display: flex;
+      flex-wrap: wrap;
 
       .card {
-        width: 30%;
+        width: 29%;
         margin: 2%;
         //height: 200px;
 
@@ -117,6 +125,16 @@ div#contents {
             background-color: $primary-color-dark;
             height: 200px;
             object-fit: contain;
+          }
+
+          .card-title {
+            max-width: 100%;
+            max-height: 100%;
+            overflow-y: scroll;
+
+            &::-webkit-scrollbar {
+              display: none;
+            }
           }
         }
 
@@ -131,6 +149,7 @@ div#contents {
 
   open-modal {
     overflow-x: hidden;
+
     .card-content {
       overflow-x: hidden;
     }
@@ -139,4 +158,12 @@ div#contents {
 
 .fontsize-inherit {
   font-size: inherit !important;
+}
+
+.primary-color {
+  color: $primary-color !important;
+}
+
+.secondary-color {
+  color: $secondary-color !important;
 }

@@ -13,25 +13,34 @@
 <header>
     <nav>
         <div class="nav-wrapper">
+            <ul class="left nav-menu">
+                <li><a href="#modal-open-curation" class="waves-effect waves-light btn btn-flat modal-trigger">Open Curation<i
+                        class="material-icons right">description</i></a></li>
+            </ul>
             <a href="/" class="title">IIIF Manga Viewer</a>
             <ul class="right nav-menu">
-                <li><a href="#modal-open" class="waves-effect waves-light btn btn-flat modal-trigger">Open Manifest<i class="material-icons right">open_in_browser</i></a></li>
-                <li><a href="#modal-search" class="waves-effect waves-light btn modal-trigger">Search Manifest<i class="material-icons right">search</i></a></li>
+                <li><a href="#modal-open" class="waves-effect waves-light btn btn-flat modal-trigger">Open Manifest<i
+                        class="material-icons right">open_in_browser</i></a></li>
+                <li><a href="#modal-search" class="waves-effect waves-light btn modal-trigger">Search Manifest<i
+                        class="material-icons right">search</i></a></li>
             </ul>
         </div>
     </nav>
 </header>
 <div id="contents">
     <div id="viewers">
-<!--        <div is="iiif-manga-viewer" manifest="http://www2.dhii.jp/nijl/NIJL0001/SA4-0026/manifest.json"></div>-->
-<!--        <div is="iiif-manga-viewer" manifest="http://www2.dhii.jp/nijl/NIJL0008/NA4-0644/manifest.json"></div>-->
-        <div is="iiif-manga-viewer" manifest="https://www.dl.ndl.go.jp/api/iiif/2542527/manifest.json"></div>
-                <div is="iiif-manga-viewer" manifest="https://www.dl.ndl.go.jp/api/iiif/2532216/manifest.json"></div>
+        <!--        <div is="iiif-manga-viewer" manifest="http://www2.dhii.jp/nijl/NIJL0001/SA4-0026/manifest.json"></div>-->
+        <!--        <div is="iiif-manga-viewer" manifest="http://www2.dhii.jp/nijl/NIJL0008/NA4-0644/manifest.json"></div>-->
+        <iiif-manga-viewer manifest="https://www.dl.ndl.go.jp/api/iiif/2542527/manifest.json"></iiif-manga-viewer>
+        <iiif-manga-viewer manifest="https://www.dl.ndl.go.jp/api/iiif/2532216/manifest.json"></iiif-manga-viewer>
+        <curation-viewer></curation-viewer>
     </div>
     <search-modal id="modal-search"></search-modal>
     <open-modal id="modal-open"></open-modal>
+    <open-curation-modal id="modal-open-curation"></open-curation-modal>
 </div>
 </body>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js" type="module"></script>
 <script src="src/js/thread.js" type="module"></script>
 <script src="src/js/IIIFMangaViewer.js" type="module"></script>
 </html>

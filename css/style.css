@@ -11,7 +11,12 @@ body nav .nav-wrapper .title {
 }
 body nav .nav-wrapper .nav-menu {
   position: absolute;
+}
+body nav .nav-wrapper .nav-menu.right {
   right: 0;
+}
+body nav .nav-wrapper .nav-menu.left {
+  left: 0;
 }
 
 div#contents {
@@ -80,15 +85,24 @@ div#contents search-modal search-bar .card-content > .dropdown > .rows-wrapper.i
 }
 div#contents search-modal .cards {
   display: flex;
+  flex-wrap: wrap;
 }
 div#contents search-modal .cards .card {
-  width: 30%;
+  width: 29%;
   margin: 2%;
 }
 div#contents search-modal .cards .card .card-image img {
   background-color: #bababa;
   height: 200px;
   object-fit: contain;
+}
+div#contents search-modal .cards .card .card-image .card-title {
+  max-width: 100%;
+  max-height: 100%;
+  overflow-y: scroll;
+}
+div#contents search-modal .cards .card .card-image .card-title::-webkit-scrollbar {
+  display: none;
 }
 div#contents search-modal .cards .card .card-content {
   height: 200px;
@@ -104,6 +118,14 @@ div#contents open-modal .card-content {
 
 .fontsize-inherit {
   font-size: inherit !important;
+}
+
+.primary-color {
+  color: #e0e0e0 !important;
+}
+
+.secondary-color {
+  color: #5c6bc0 !important;
 }
 
 /*# sourceMappingURL=style.css.map */
