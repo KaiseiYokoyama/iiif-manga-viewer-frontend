@@ -16,7 +16,14 @@ body {
 
       .nav-menu {
         position: absolute;
-        right: 0;
+
+        &.right {
+          right: 0;
+        }
+
+        &.left {
+          left: 0;
+        }
       }
     }
   }
@@ -142,6 +149,7 @@ div#contents {
 
   open-modal {
     overflow-x: hidden;
+
     .card-content {
       overflow-x: hidden;
     }
@@ -150,4 +158,12 @@ div#contents {
 
 .fontsize-inherit {
   font-size: inherit !important;
+}
+
+.primary-color {
+  color: $primary-color !important;
+}
+
+.secondary-color {
+  color: $secondary-color !important;
 }

@@ -11,7 +11,12 @@ body nav .nav-wrapper .title {
 }
 body nav .nav-wrapper .nav-menu {
   position: absolute;
+}
+body nav .nav-wrapper .nav-menu.right {
   right: 0;
+}
+body nav .nav-wrapper .nav-menu.left {
+  left: 0;
 }
 
 div#contents {
@@ -113,6 +118,14 @@ div#contents open-modal .card-content {
 
 .fontsize-inherit {
   font-size: inherit !important;
+}
+
+.primary-color {
+  color: #e0e0e0 !important;
+}
+
+.secondary-color {
+  color: #5c6bc0 !important;
 }
 
 /*# sourceMappingURL=style.css.map */

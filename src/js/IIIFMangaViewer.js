@@ -1110,21 +1110,13 @@ async function run() {
             // 一番最初にDOMに挿入されたCurationViewerが規定のCurationViewerになる
             if (!CurationViewer.curationViewer) {
                 CurationViewer.curationViewer = this;
-                this.classList.add('default');
+                this.classList.add('default', 'hide');
             }
-            // if (CurationViewer.curationViewer) {
-            //     CurationViewer.curationViewer.remove();
-            // }
-            // CurationViewer.curationViewer = this;
-            //
-            // this.id = 'cutation-viewer';
 
             // card
-            this.classList.add('card', 'hide');
+            this.classList.add('card');
 
             // canvasを設定
-            // const canvas = document.createElement('canvas');
-            // this.appendChild(canvas);
             const viewerCanvas = new ViewerCanvas(this);
             this.viewerCanvas = viewerCanvas;
             this.appendChild(viewerCanvas);
@@ -1160,7 +1152,9 @@ async function run() {
                         a.innerHTML =
                             '<i class="material-icons">close</i>Close';
                         if (CurationViewer.curationViewer === this) {
-                            this.classList.toggle('hide');
+                            a.onclick = () => {
+                                this.classList.toggle('hide');
+                            };
                         } else {
                             a.onclick = () => {
                                 this.remove();
@@ -1208,18 +1202,6 @@ async function run() {
                     li.appendChild(a);
                     ulL.appendChild(li);
                 }
-                // {
-                //     const li = document.createElement('li');
-                //     const a = document.createElement('a');
-                //     a.innerHTML =
-                //         '<i class="material-icons">view_module</i>';
-                //     a.onclick = () => {
-                //         this.iconView.onOff();
-                //     };
-                //     this.iconViewIcon = a;
-                //     li.appendChild(a);
-                //     ulL.appendChild(li);
-                // }
                 navWrapper.appendChild(ulL);
 
                 const label = document.createElement('span');
@@ -1485,6 +1467,54 @@ async function run() {
          */
         swap = (oldindex, newindex) => {
             return this.viewer.swap(oldindex, newindex)
+        }
+
+        fromJson = (jsonText) => {
+            if (CurationViewer.curationViewer === this) {
+                return;
+            }
+            if (this.viewer.set_items(jsonText)) {
+                let promises = [];
+                for (let i = 0; i < this.viewer.size(); i++) {
+                    const promise = new Promise(() => {
+                        let item = this.viewer.get(i);
+                        const image = document.createElement('img');
+                        image.crossOrigin = "Anonymous";
+                        image.src = item.image_id();
+                        image.onload = () => {
+                            let canvas = document.createElement('canvas');
+                            let [sx, sy, sw, sh, dx, dy, dw, dh] =
+                                [
+                                    item.get_x_start(),
+                                    item.get_y_start(),
+                                    item.get_x_end() - item.get_x_start(),
+                                    item.get_y_end() - item.get_y_start(),
+                                    0,
+                                    0,
+                                    item.get_x_end() - item.get_x_start(),
+                                    item.get_y_end() - item.get_y_start()
+                                ];
+                            canvas.width = dw;
+                            canvas.height = dh;
+                            canvas.getContext('2d').drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh);
+
+                            let img = new Image();
+                            img.src = canvas.toDataURL('image/png');
+
+                            item.set_image(img);
+                            this.push(item);
+                            // resolve(item.label());
+                        }
+                    });
+                    promises.push(promise);
+                }
+
+                Promise.all(promises);
+
+            } else {
+                M.Toast({html: '<i class="material-icons error left">error</i>Parse Failed'});
+                this.remove();
+            }
         }
 
         move(newX, newY) {
@@ -1940,6 +1970,85 @@ async function run() {
     }
 
     customElements.define('open-modal', OpenModal);
+
+    /**
+     * ファイルを読み取ってCurationViewerを開くmodal
+     */
+    class OpenCurationModal extends HTMLElement {
+        constructor() {
+            super();
+        }
+
+        /**
+         * 要素が DOM に挿入されるたびに呼び出されます。
+         * リソースの取得やレンダリングなどの、セットアップ コードの実行に役立ちます。
+         * 一般に、この時点まで作業を遅らせるようにする必要があります。
+         * [参考](https://developers.google.com/web/fundamentals/web-components/customelements?hl=ja)
+         */
+        connectedCallback() {
+            this.classList.add('modal');
+            M.Modal.init(this, {});
+
+            // content
+            const content = document.createElement('div');
+            content.classList.add('modal-content');
+            this.content = content;
+            super.appendChild(content);
+
+            // title
+            const title = document.createElement('h3');
+            title.innerHTML =
+                '<i class="material-icons left fontsize-inherit">description</i>Open Curation File';
+            this.appendChild(title);
+
+            // file input
+            const fileInput = document.createElement('div');
+            fileInput.classList.add('input-field', 'file-field');
+            fileInput.innerHTML =
+                '<div class="btn">\n' +
+                '   <span><i class="material-icons">description</i></span>\n' +
+                '   <input type="file" accept="application/json">\n' +
+                '</div>\n' +
+                '<div class="file-path-wrapper">\n' +
+                '   <input class="file-path validate" type="text">\n' +
+                '</div>';
+            this.appendChild(fileInput);
+            this.input = fileInput.querySelector('input[type="file"]');
+
+            // footer
+            const footer = document.createElement('div');
+            footer.classList.add('modal-footer');
+            this.footer = footer;
+            super.appendChild(footer);
+
+            // submit
+            const a = document.createElement('a');
+            a.classList.add('modal-close', 'waves-effect', 'waves-blue', 'btn-flat', 'secondary-color');
+            a.innerHTML =
+                '<i class="material-icons left">description</i>Open';
+            a.onclick = () => {
+                let reader = new FileReader();
+                reader.readAsText(this.input.files[0]);
+                reader.onload = () => {
+                    const cv = new CurationViewer();
+                    document.getElementById('viewers').appendChild(cv);
+                    cv.fromJson(reader.result);
+                }
+            };
+            this.footerAppendChild(a);
+        }
+
+        appendChild(newChild) {
+            this.content.appendChild(newChild);
+        }
+
+        footerAppendChild(newChild) {
+            this.footer.appendChild(newChild);
+        }
+    }
+
+    customElements.define('open-curation-modal', OpenCurationModal);
+
 }
 
 run();

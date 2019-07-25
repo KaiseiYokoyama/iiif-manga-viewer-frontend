@@ -154,6 +154,16 @@ impl WasmCurationViewer {
         }
     }
 
+    pub fn set_items(&mut self, json: String) -> bool {
+        let items: Vec<CurationItem> = match serde_json::from_str(&json) {
+            Ok(items) => items,
+            Err(_) => return false,
+        };
+
+        self.items = items;
+        true
+    }
+
     pub fn label(&self) -> String {
         "Curation".to_string()
     }
@@ -164,6 +174,14 @@ impl WasmCurationViewer {
         } else {
             String::new()
         }
+    }
+
+    pub fn size(&self) -> usize {
+        self.items.len()
+    }
+
+    pub fn get(&self, index: usize) -> Option<CurationItem> {
+        self.items.get(index).cloned()
     }
 
     pub fn now(&self) -> Option<CurationItem> {
