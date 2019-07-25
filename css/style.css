@@ -29,6 +29,9 @@ div#contents div#viewers {
   height: 100%;
   display: flex;
 }
+div#contents div#viewers curation-viewer.default {
+  order: 100;
+}
 div#contents viewer-s {
   width: 100%;
   height: 100%;

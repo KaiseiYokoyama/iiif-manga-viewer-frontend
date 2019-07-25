@@ -38,6 +38,12 @@ div#contents {
     width: 100%;
     height: 100%;
     display: flex;
+
+    curation-viewer {
+      &.default {
+        order: 100;
+      }
+    }
   }
 
   viewer-s {
