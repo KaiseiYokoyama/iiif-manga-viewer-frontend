@@ -1525,9 +1525,10 @@ async function run() {
      * 検索バー
      */
     class SearchBar extends HTMLElement {
-        constructor(cards) {
+        constructor(cards, preloader) {
             super();
             this.cards = cards;
+            this.preloader = preloader;
         }
 
         /**
@@ -1742,6 +1743,7 @@ async function run() {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             };
+            this.preloading();
             fetch(url, {
                 method: 'POST',
                 headers,
@@ -1755,8 +1757,16 @@ async function run() {
                     const result = results.get(i);
                     this.appendCard(new SearchCard(result));
                 }
+                this.preloading();
             }).catch(err => {
             })
+        }
+
+        /**
+         * preloaderの表示/非表示
+         */
+        preloading() {
+            this.preloader.classList.toggle('hide');
         }
 
         /**
@@ -1872,9 +1882,61 @@ async function run() {
             const cards = document.createElement('div');
             cards.classList.add('cards');
 
+            // preloader
+            let preloader = document.createElement('div');
+            preloader.innerHTML =
+                '<div class="row">' +
+                '<div class="col offset-m3 m6 center">' +
+                '<div class="preloader-wrapper big active">\n' +
+                '<div class="spinner-layer spinner-blue">\n' +
+                '<div class="circle-clipper left">\n' +
+                '<div class="circle"></div>\n' +
+                '</div>' +
+                '<div class="gap-patch">\n' +
+                '<div class="circle"></div>\n' +
+                '</div>' +
+                '<div class="circle-clipper right">\n' +
+                '<div class="circle"></div>\n' +
+                '</div>\n' +
+                '</div>' +
+                '<div class="spinner-layer spinner-red">\n' +
+                '<div class="circle-clipper left">\n' +
+                '<div class="circle"></div>\n' +
+                '</div><div class="gap-patch">\n' +
+                '<div class="circle"></div>\n' +
+                '</div><div class="circle-clipper right">\n' +
+                '<div class="circle"></div>\n' +
+                '</div>\n' +
+                '</div>\n' +
+                '<div class="spinner-layer spinner-yellow">\n' +
+                '<div class="circle-clipper left">\n' +
+                '<div class="circle"></div>\n' +
+                '</div><div class="gap-patch">\n' +
+                '<div class="circle"></div>\n' +
+                '</div><div class="circle-clipper right">\n' +
+                '<div class="circle"></div>\n' +
+                '</div>\n' +
+                '</div>\n' +
+                '<div class="spinner-layer spinner-green">\n' +
+                '<div class="circle-clipper left">\n' +
+                '<div class="circle"></div>\n' +
+                '</div><div class="gap-patch">\n' +
+                '<div class="circle"></div>\n' +
+                '</div><div class="circle-clipper right">\n' +
+                '<div class="circle"></div>\n' +
+                '</div>\n' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>';
+            preloader = preloader.firstElementChild;
+            preloader.classList.add('hide');
+
             // 検索バーの設置
-            const search_bar = new SearchBar(cards);
+            const search_bar = new SearchBar(cards, preloader);
             this.appendChild(search_bar);
+            // preloaderの設置
+            this.appendChild(preloader);
             // cardsの設置
             this.appendChild(cards);
         }
