@@ -1107,12 +1107,17 @@ async function run() {
         connectedCallback() {
             viewerCounter++;
 
-            if (CurationViewer.curationViewer) {
-                CurationViewer.curationViewer.remove();
+            // 一番最初にDOMに挿入されたCurationViewerが規定のCurationViewerになる
+            if (!CurationViewer.curationViewer) {
+                CurationViewer.curationViewer = this;
+                this.classList.add('default');
             }
-            CurationViewer.curationViewer = this;
-
-            this.id = 'cutation-viewer';
+            // if (CurationViewer.curationViewer) {
+            //     CurationViewer.curationViewer.remove();
+            // }
+            // CurationViewer.curationViewer = this;
+            //
+            // this.id = 'cutation-viewer';
 
             // card
             this.classList.add('card', 'hide');
@@ -1154,8 +1159,35 @@ async function run() {
                         a.classList.add('close');
                         a.innerHTML =
                             '<i class="material-icons">close</i>Close';
+                        if (CurationViewer.curationViewer === this) {
+                            this.classList.toggle('hide');
+                        } else {
+                            a.onclick = () => {
+                                this.remove();
+                            };
+                        }
+                        li.appendChild(a);
+                        dropdown.appendChild(li);
+                    }
+                    {
+                        const li = document.createElement('li');
+                        const a = document.createElement('a');
+                        a.classList.add('save_json');
+                        a.innerHTML =
+                            '<i class="material-icons">save</i>Save Curation';
                         a.onclick = () => {
-                            this.remove();
+                            const jsonBlob = new Blob([this.viewer.json()], {type: "text/plain;charset=utf-8"});
+
+                            const link = document.createElement('a');
+                            link.classList.add('hide');
+                            document.body.appendChild(link);
+
+                            link.href = URL.createObjectURL(jsonBlob);
+                            link.download = 'Curation.json';
+
+                            link.click();
+
+                            link.remove();
                         };
                         li.appendChild(a);
                         dropdown.appendChild(li);
@@ -1176,21 +1208,26 @@ async function run() {
                     li.appendChild(a);
                     ulL.appendChild(li);
                 }
-                {
-                    const li = document.createElement('li');
-                    const a = document.createElement('a');
-                    a.innerHTML =
-                        '<i class="material-icons">view_module</i>';
-                    a.onclick = () => {
-                        this.iconView.onOff();
-                    };
-                    this.iconViewIcon = a;
-                    li.appendChild(a);
-                    ulL.appendChild(li);
-                }
+                // {
+                //     const li = document.createElement('li');
+                //     const a = document.createElement('a');
+                //     a.innerHTML =
+                //         '<i class="material-icons">view_module</i>';
+                //     a.onclick = () => {
+                //         this.iconView.onOff();
+                //     };
+                //     this.iconViewIcon = a;
+                //     li.appendChild(a);
+                //     ulL.appendChild(li);
+                // }
                 navWrapper.appendChild(ulL);
 
                 const label = document.createElement('span');
+                if (CurationViewer.curationViewer === this) {
+                    label.innerText = 'Curation Viewer (Default)';
+                } else {
+                    label.innerText = 'Curation Viewer';
+                }
                 this.label = label;
                 navWrapper.appendChild(label);
 
