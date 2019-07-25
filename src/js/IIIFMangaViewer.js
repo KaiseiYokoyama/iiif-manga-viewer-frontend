@@ -397,9 +397,6 @@ async function run() {
         crop = (event) => {
             let origin = this.cropOrigin;
             if (event.target !== this.image || !origin) {
-                console.log('out of target');
-                console.log(event.target);
-                console.log(origin);
             } else {
                 let manifestID = this.imageViewer.getAttribute('manifest');
                 if (!manifestID) {
@@ -1035,7 +1032,6 @@ async function run() {
                     if (!this.curationViewer.swap(evt.oldIndex, evt.newIndex)) {
                         M.Toast({html: '<i class="material-icons error left">error</i>Swap Failed'});
                     }
-                    console.log(this.curationViewer.viewer.json());
                 }
             })
         }
@@ -1757,7 +1753,6 @@ async function run() {
                 if (!results) return;
                 for (let i = 0; i < results.len(); i++) {
                     const result = results.get(i);
-                    console.log(result.url());
                     this.appendCard(new SearchCard(result));
                 }
             }).catch(err => {
