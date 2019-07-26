@@ -199,7 +199,10 @@ impl Viewer {
         match &self.manifest {
             Some(m) => match &m.label {
                 Label::String(s) => s,
-                Label::Vec(vec) => return serde_json::to_string(&vec[0]).unwrap(),
+                Label::Vec(vec) => match vec.get(0) {
+                    Some(ec) => &ec.value,
+                    None => "None",
+                },
             },
             None => "None",
         }.to_string()

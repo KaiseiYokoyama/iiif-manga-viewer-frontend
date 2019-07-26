@@ -8,7 +8,7 @@ import init, {
     SearchResults,
     CurationItem,
     WasmCurationViewer,
-} from '../../pkg/iiif_manga_viewer_frontend.js';
+} from '../pkg/iiif_manga_viewer_frontend.js';
 
 async function run() {
     await init();
