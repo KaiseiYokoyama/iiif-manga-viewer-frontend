@@ -601,6 +601,17 @@ async function run() {
                         li.appendChild(a);
                         dropdown.appendChild(li);
                     }
+                    {
+                        const li = document.createElement('li');
+                        const a = document.createElement('a');
+                        a.classList.add('view-manifest-json');
+                        a.innerHTML =
+                            '<i class="material-icons">link</i>Source';
+                        a.href = this.getAttribute('manifest');
+                        a.target = '_blank';
+                        li.appendChild(a);
+                        dropdown.appendChild(li);
+                    }
 
                     navBar.appendChild(dropdown);
                 }
