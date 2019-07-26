@@ -643,6 +643,7 @@ async function run() {
                 navWrapper.appendChild(ulL);
 
                 const label = document.createElement('span');
+                label.classList.add('truncate');
                 this.label = label;
                 navWrapper.appendChild(label);
 
